@@ -1,0 +1,6 @@
+finalizar e/ou iniciar o taiscale pro https
+
+iniciar -  tailscale serve --bg http://localhost:8080
+
+finalizar -  tailscale serve --https=443 off
+

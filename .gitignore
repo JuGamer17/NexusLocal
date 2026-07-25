@@ -1,0 +1,23 @@
+# Segredos e configuração local — nunca deve ir pro repositório
+.env
+*.env
+!.env.example
+
+# Dados de usuários e logs de acesso (gerados em runtime, não fazem parte do código-fonte)
+storage/
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

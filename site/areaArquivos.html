@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Clowd</title>
+    <link rel="stylesheet" href="cssArq.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playwrite+NZ+Basic:wght@100..400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="titulo">
+        <img src="Images/Icon.png" alt="ícone">
+        <h1 >
+            Clowd Pessoal
+        </h1>
+    </div>
+
+    <div class="menu">
+        <div id="menuLateral">
+            <p>
+                home
+            </p>
+            <p>
+                configurações
+            </p>
+            <p>
+                sair
+            </p>
+        </div>
+        <div id="backgrownd">
+            <div id="caminhoo">
+                <p><i>home/pasta secretaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</i></p>
+            </div>
+            <div id="contentArea">
+
+
+
+            </div>
+            
+        </div>
+    </div>
+
+    <dialog id="modal">
+        <div id="backgrowndModal">
+            <div id="divImageModal">
+                <div id="divImageModalImg">
+                    <img src="Images/NotFound.png" alt="" id="modalImage">
+                </div>
+            </div>
+            <div id="divArqModal">
+                <p id="tamanhoArquivo">4,8Gb</p>
+                <p id="nomeArquivo">teste</p>
+                
+            </div>
+            <div>
+                <button id="excluir">Excluir</button>
+                <button id="download">Baixar</button>
+            </div>
+            
+        </div>
+    </dialog>
+
+    <input type="file" id="inputArquivo" style="display: none;">
+
+
+    <template id="template_arquivo">
+        <div class="arquivos" style="cursor: pointer;"><!--isso pode mudar, provavel q vai-->
+            <img src="" alt="" class="imagemTenplate"><!--source da referencia(imagem/video/zip) e o alt tbm-->
+                <p class="tamanhoTemplate">
+                    <!--aqui o tamanho-->
+                </p>
+                <p class="nomeTemplate">
+                    <!--aqui e o nome do arquivo-->
+                </p>
+        </div>
+    </template>
+    
+
+
+    <script src="Js/fileManager.js"></script>
+</body>
+</html>

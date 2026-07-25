@@ -1,0 +1,107 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 90vh;
+    width: 100%;
+}
+
+body{
+    background-color: rgb(10, 71, 92);/* lightblue para light mode*/
+    height: 100vh;
+}
+
+
+#area{
+    display: flex;
+    
+    justify-content: center;
+    height: 100vh;
+    
+    
+}
+
+#loguin{
+    max-width: min(100%, 335px);
+    padding: 15px;
+    background-color: rgb(100, 100, 100); /*rgb(235, 235, 235);*/
+    height: 30%;
+    margin-top: auto;
+    margin-bottom: auto;
+    width:35%;
+    border-radius: 5px;
+}
+
+#loguin p{
+    font-family: "Playwrite NZ Basic";
+    text-align: center;
+    font-size: 200%;
+    color: rgb(230, 230, 230);
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+
+#loguin input{
+    color: rgb(0, 0, 0);
+    border: hidden;
+    background-color: rgb(180, 180, 180);
+    width: 75%;
+    height: 25px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+#loguin label{
+    color: rgb(230, 230, 230);
+    
+}
+
+#button{
+    
+
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    
+    
+}
+
+#button button{
+    cursor: pointer;
+    transition: 0.3s;
+    border: hidden;
+    color: rgb(230, 230, 230);
+    background-color: rgb(180, 180, 180);
+    width: 90%;
+    border-radius: 5px;
+}
+
+#Senha{
+        margin-left: 11px;
+    }
+
+#button button:active{
+    transform: scale(0.95);
+    opacity: 0.8;
+}
+
+
+
+
+
+@media (max-width: 500px) {
+    body{
+        font-size: 90%;
+    }
+    #loguin{
+    width: 50%;
+
+    }
+    #loguin input{
+    width: 95%;
+    margin-bottom: 10px;
+    }
+
+    #Senha{
+        margin-left: unset;
+    }
+}
