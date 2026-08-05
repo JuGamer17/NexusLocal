@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Configurações — NexusLocal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Playwrite+NZ+Basic:wght@100..400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="theme.css">
+    <link rel="stylesheet" href="cssArq.css">
+</head>
+<body>
+
+    <div class="titulo">
+        <img src="Images/Icon.png" alt="ícone">
+        <h1>NexusLocal</h1>
+    </div>
+<div id="back">
+    <div class="menu">
+        <div id="menuLateral">
+            <p onclick="mostrarInfo()">Info</p>
+            <p onclick="mostrarUsuarios()">Usuários</p>
+            <p onclick="mostrarEspecificações()">Especificações</p>
+            <p onclick="salvar_e_sair()">Sair</p>
+        </div>
+    </div>
+
+    <div id="backgrownd">
+            <div id="caminhoo">
+                <p><i>home/configurações</i></p>
+            </div>
+
+            <!-- ==================== ABA INFO ==================== -->
+            <div id="tabInfo" class="tab active">
+                <h2>Estatísticas de Uso</h2>
+
+                
+
+                <div id="infoColunas">
+
+                    <!-- Coluna 1: toggle Leitura/Escrita + gráfico + resumo por usuário + filtro de período -->
+                    <div id="colunaGrafico">
+                        <div id="toggleLeituraEscrita">
+                            <button type="button" class="chipBtn active" data-tipo="escrita" onclick="alternarTipoGrafico(this, 'escrita')">Escrita</button>
+                            <button type="button" class="chipBtn" data-tipo="leitura" onclick="alternarTipoGrafico(this, 'leitura')">Leitura</button>
+                        </div>
+
+                        <div id="graficoCirculo">
+                            <!-- Placeholder para gráfico — substituir com biblioteca de chart quando disponível -->
+                            <span>GRÁFICO</span>
+                        </div>
+
+                        <div id="resumoUsuarios">
+                            <!-- Preenchido dinamicamente conforme o toggle Escrita/Leitura e o período selecionado -->
+                            <p><span class="nomeUsuarioResumo">usuario1:</span> <span class="valorUsoResumo">15Gb</span></p>
+                            <p><span class="nomeUsuarioResumo">usuario2:</span> <span class="valorUsoResumo">32Gb</span></p>
+                            <p><span class="nomeUsuarioResumo">usuario3:</span> <span class="valorUsoResumo">532Mb</span></p>
+                        </div>
+
+                        <div id="filtroPeriodo">
+                            <button type="button" class="chipBtn active" data-periodo="hoje" onclick="filtrarPeriodo(this, 'hoje')">hoje</button>
+                            <button type="button" class="chipBtn" data-periodo="7dias" onclick="filtrarPeriodo(this, '7dias')">7 dias</button>
+                            <button type="button" class="chipBtn" data-periodo="1mes" onclick="filtrarPeriodo(this, '1mes')">1 mês</button>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 2: seleção do usuário para ver o log de itens enviados -->
+                    <div id="colunaUsuariosLog">
+                        <div class="usuarioLogItem active" data-user="usuario1" onclick="selecionarUsuarioLog(this, 'usuario1')">usuario1:</div>
+                        <div class="usuarioLogItem" data-user="usuario2" onclick="selecionarUsuarioLog(this, 'usuario2')">usuario2:</div>
+                        <div class="usuarioLogItem" data-user="usuario3" onclick="selecionarUsuarioLog(this, 'usuario3')">usuario3:</div>
+                    </div>
+
+                    <!-- Coluna 3: log dos itens enviados (tamanho e data) do usuário selecionado na coluna 2 -->
+                    <div id="colunaLogItens">
+                        <p id="tituloLogUsuario">logs dos itens enviados<br>tamanho e data em lista</p>
+                        <div id="tabelaLogBody">
+                            <!-- Preenchido dinamicamente a partir da tabela LogAcesso, filtrado pelo usuário da coluna 2 e pelo período selecionado -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ==================== ABA USUÁRIOS ==================== -->
+            <div id="tabUsuarios" class="tab">
+                <h2>Gestão de Usuários</h2>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <p>Usuários cadastrados:</p>
+                    <button id="btnAdicionarUsuario" style="background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 8px 20px; cursor: pointer; font-family: var(--font-body);">+ Adicionar</button>
+                </div>
+
+                <div id="listaUsuarios" style="display: flex; flex-direction: column; gap: 5px;">
+                    <!-- Exemplo de usuário na lista -->
+                    <div class="usuarioCard" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <p>user1</p>
+                        <button id="btnRemoverUser1" style="border: none; background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 4px 8px; cursor: pointer;">x</button>
+                    </div>
+
+                    <div class="usuarioCard" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <p>user2</p>
+                        <button id="btnRemoverUser2" style="border: none; background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 4px 8px; cursor: pointer;">x</button>
+                    </div>
+
+                    <div class="usuarioCard" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <p>user3</p>
+                        <button id="btnRemoverUser3" style="border: none; background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 4px 8px; cursor: pointer;">x</button>
+                    </div>
+
+                    <!-- Exemplo de permissões por pasta, leitura/escrita -->
+                    <div class="permissoesUser" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 8px; margin-top: 5px;">
+                        <p>Permissões — user1:</p>
+                        <label><input type="checkbox"> Home — Leitura</label>
+                        <label><input type="checkbox"> Home — Escrita</label>
+                        <label><input type="checkbox"> Edição — Leitura</label>
+                        <label><input type="checkbox"> Edição — Escrita</label>
+                        <label><input type="checkbox"> A editar — Leitura</label>
+                        <label><input type="checkbox"> A editar — Escrita</label>
+                        <label><input type="checkbox"> A revisar — Leitura</label>
+                        <label><input type="checkbox"> A revisar — Escrita</label>
+                        <label><input type="checkbox"> Vídeos prontos — Leitura</label>
+                        <label><input type="checkbox"> Vídeos prontos — Escrita</label>
+                    </div>
+                </div>
+
+                <!-- Modal de edição de senha do usuário -->
+                <dialog id="modalEdicaoUsuario" style="border: none; border-radius: 8px;">
+                    <div id="backgrowndModal" style="display: flex; flex-direction: column; height: 100%; width: 100%; background-color: var(--color-surface-1);">
+                        <h2>Editar Usuário</h2>
+                        <label for="senhaUsuario">Senha:</label>
+                        <input type="password" id="senhaUsuario" style="background-color: var(--color-input-bg); color: var(--color-input-text); width: 75%; height: 25px; border-radius: 5px;">
+                        <br><br>
+                        <label for="confirmarSenha">Confirmar senha:</label>
+                        <input type="password" id="confirmarSenha" style="background-color: var(--color-input-bg); color: var(--color-input-text); width: 75%; height: 25px; border-radius: 5px;">
+                        <br><br>
+                        <button id="btnSalvarUsuario" style="background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 10px 20px; cursor: pointer; font-family: var(--font-body);">Confirmar</button>
+                    </div>
+                </dialog>
+
+                <p style="margin-top: 10px; text-align: center;">
+                    Ao clicar em um usuário específico, é possível alterar sua senha e permissões.
+                </p>
+            </div>
+
+            <!-- ==================== ABA ESPECIFICAÇÕES ==================== -->
+            <div id="tabEspecificacoes" class="tab">
+                <h2>Especificações do Sistema</h2>
+
+                <table style="width: 100%; border-collapse: collapse; background-color: var(--color-surface-1); border-radius: 5px; overflow: hidden;">
+                    <tr style="border-bottom: solid 1px var(--color-border);">
+                        <td style="padding: 10px; text-align: left; font-weight: bold;">Tamanho máximo do disco onde instalado:</td>
+                        <td style="padding: 10px; text-align: center;">123,8Gb</td>
+                    </tr>
+                    <tr style="border-bottom: solid 1px var(--color-border);">
+                        <td style="padding: 10px; text-align: left; font-weight: bold;">Espaço ocupado por itens não-nuvem:</td>
+                        <td style="padding: 10px; text-align: center;">250,5Gb</td>
+                    </tr>
+                    <tr style="border-bottom: solid 1px var(--color-border);">
+                        <td style="padding: 10px; text-align: left; font-weight: bold;">Espaço ocupado por itens da nuvem:</td>
+                        <td style="padding: 10px; text-align: center;">500Gb</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; text-align: left; font-weight: bold;">Espaço máximo de uso da NexusLocal:</td>
+                        <td style="padding: 10px; text-align: center;">932,6Gb</td>
+                    </tr>
+                </table>
+
+                <p style="margin-top: 15px; font-style: italic;">
+                    Campos de somente leitura — informações informativas. Clique em "Aplicar" para confirmar a visualização.
+                </p>
+            </div>
+
+            <!-- Botão comum a todas as abas -->
+            
+
+        </div>
+    </div>
+
+    <script>
+        const tabInfo = document.getElementById('tabInfo');
+        const tabUsuarios = document.getElementById('tabUsuarios');
+        const tabEspecificacoes = document.getElementById('tabEspecificacoes');
+
+
+        function mostrarInfo() {
+            tabInfo.style.display = '';
+            tabUsuarios.style.display = 'none';
+            tabEspecificacoes.style.display = 'none';
+        }
+
+        function mostrarUsuarios() {
+            tabInfo.style.display = 'none';
+            tabUsuarios.style.display = '';
+            tabEspecificacoes.style.display = 'none';
+        }
+
+        function mostrarEspecificações() {
+            tabInfo.style.display = 'none';
+            tabUsuarios.style.display = 'none';
+            tabEspecificacoes.style.display = '';
+        }
+
+        // ---- Aba Info: interações visuais (ainda sem dados reais vindos da API) ----
+
+        function alternarTipoGrafico(botao, tipo) {
+            // Tira o "active" de todos os botões do grupo e coloca só no que foi clicado
+            document.querySelectorAll('#toggleLeituraEscrita .chipBtn').forEach(b => b.classList.remove('active'));
+            botao.classList.add('active');
+            // TODO: quando o gráfico real existir, recarregar os dados de LogAcesso filtrando por tipo_acao = tipo ('escrita' ou 'leitura')
+        }
+
+        function filtrarPeriodo(botao, periodo) {
+            document.querySelectorAll('#filtroPeriodo .chipBtn').forEach(b => b.classList.remove('active'));
+            botao.classList.add('active');
+            // TODO: recarregar estatísticas e log filtrando LogAcesso.data_hora conforme o período ('hoje' | '7dias' | '1mes')
+        }
+
+        function selecionarUsuarioLog(item, usuario) {
+            document.querySelectorAll('.usuarioLogItem').forEach(u => u.classList.remove('active'));
+            item.classList.add('active');
+            document.getElementById('tituloLogUsuario').textContent = `Itens enviados por ${usuario}`;
+            // TODO: buscar na API os registros de LogAcesso do usuário selecionado e preencher #tabelaLogBody
+        }
+
+        function salvar_e_sair(){
+            window.close();
+            window.location.href = 'index.html';
+        }
+
+        mostrarInfo();
+
+        // Salvar e Sair — fecha a página de configurações e volta para o login
+        
+    </script>
+
+
+</body>
+    

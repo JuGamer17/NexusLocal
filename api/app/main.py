@@ -108,7 +108,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Usuário e senha (já em HASH bcrypt) vêm do .env — nunca em texto puro no código.
+# Usuário e senha (já em HASH bcrypt) vêm do .env 
 # Isso é temporário: o próximo passo é buscar essa informação na tabela Usuario do MySQL.
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 usuarios = {

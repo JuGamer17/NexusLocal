@@ -6,8 +6,9 @@ html, body {
 }
 
 body{
-    background-color: rgb(10, 71, 92);/* lightblue para light mode*/
+    background-color: var(--color-bg);
     height: 100vh;
+    font-family: var(--font-body);
 }
 
 
@@ -23,7 +24,7 @@ body{
 #loguin{
     max-width: min(100%, 335px);
     padding: 15px;
-    background-color: rgb(100, 100, 100); /*rgb(235, 235, 235);*/
+    background-color: var(--color-surface-1); /*rgb(235, 235, 235);*/
     height: 30%;
     margin-top: auto;
     margin-bottom: auto;
@@ -32,18 +33,18 @@ body{
 }
 
 #loguin p{
-    font-family: "Playwrite NZ Basic";
+    font-family: var(--font-display);
     text-align: center;
     font-size: 200%;
-    color: rgb(230, 230, 230);
+    color: var(--color-text);
     margin-bottom: 10px;
     margin-top: 0;
 }
 
 #loguin input{
-    color: rgb(0, 0, 0);
+    color: var(--color-input-text);
     border: hidden;
-    background-color: rgb(180, 180, 180);
+    background-color: var(--color-input-bg);
     width: 75%;
     height: 25px;
     margin-bottom: 10px;
@@ -51,7 +52,7 @@ body{
 }
 
 #loguin label{
-    color: rgb(230, 230, 230);
+    color: var(--color-text);
     
 }
 
@@ -69,8 +70,8 @@ body{
     cursor: pointer;
     transition: 0.3s;
     border: hidden;
-    color: rgb(230, 230, 230);
-    background-color: rgb(180, 180, 180);
+    color: var(--color-text);
+    background-color: var(--color-input-bg);
     width: 90%;
     border-radius: 5px;
 }

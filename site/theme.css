@@ -1,0 +1,30 @@
+/* ============================================================
+   theme.css — variáveis de tema (design tokens)
+   Compartilhado por TODAS as páginas do site (login, área de arquivos, etc).
+   Pra mudar uma cor ou fonte no app inteiro, mexe aqui, uma vez só.
+   ============================================================ */
+
+:root {
+  /* --- Cores base --- */
+  --color-bg: rgb(10, 71, 92);          /* fundo geral do app */
+  --color-sidebar-bg: rgb(10, 77, 99);  /* fundo do menu lateral (tom levemente diferente do --color-bg, de propósito) */
+
+  /* "Camadas" de superfície: cada uma um pouco mais clara que a anterior,
+     dando sensação de profundidade (container > item > botão) */
+  --color-surface-1: rgb(100, 100, 100); /* containers: menu, área de conteúdo, card de login, modal */
+  --color-surface-2: rgb(131, 131, 131); /* itens dentro dos containers: card de arquivo, corpo do modal */
+  --color-surface-3: rgb(146, 146, 146); /* elementos "por cima de tudo": botões */
+
+  --color-border: rgb(107, 107, 107);
+
+  /* Campos de formulário */
+  --color-input-bg: rgb(180, 180, 180);
+  --color-input-text: rgb(0, 0, 0);
+
+  /* Texto */
+  --color-text: rgb(230, 230, 230);
+
+  /* --- Tipografia --- */
+  --font-display: "Playwrite NZ Basic", cursive; /* só pro título/marca */
+  --font-body: "Manrope", sans-serif;             /* todo o resto: labels, botões, nomes de arquivo */
+}

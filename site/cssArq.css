@@ -4,10 +4,10 @@
 
 
 body{
-    color: rgb(230, 230, 230);/*sem nada pro white mode*/
+    color: var(--color-text);
     margin: 0;
-    background-color: rgb(10, 71, 92);/* lightblue para light mode*/
-    
+    background-color: var(--color-bg);
+    font-family: var(--font-body);
 }
 
 @media (max-width: 400px) {
@@ -15,16 +15,20 @@ body{
         font-size: 90%;
     }
 }
+#back{
+    display: flex;
+    
+}
 
 .titulo{
     
     display: flex;
     align-items: center;
-    font-family: "Playwrite NZ Basic";
-    color: rgb(230, 230, 230);/*rgb(255, 255, 255) light mode*/
+    font-family: var(--font-display);
+    color: var(--color-text);
     text-align: center;
     font-size: 16px;
-    background-color: rgb(10, 71, 92);/* lightblue para light mode*/
+    background-color: var(--color-bg);
 }
 .titulo img{
     max-width: 120px;
@@ -52,20 +56,20 @@ body{
 }
 
 #menuLateral{
-    background-color: rgb(10, 77, 99);/* lightblue light mode*/
+    background-color: var(--color-sidebar-bg);
     border-radius: 5px;
 }
 #menuLateral p{
     padding: 10px;
     border-radius: 5px;
     text-align: center;
-    background-color: rgb(100, 100, 100);
+    background-color: var(--color-surface-1);
 }
 
 #backgrownd{
     
 
-    background-color: rgb(100, 100, 100); /*rgb(235, 235, 235);*/
+    background-color: var(--color-surface-1);
     border-radius: 5px;
     margin-left: 5px;
     margin-right: 5px;
@@ -77,6 +81,8 @@ body{
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #caminho{
@@ -121,7 +127,7 @@ body{
     
     
     
-    background-color: rgb(131, 131, 131);   /*rgb(235, 239, 241); white mode*/
+    background-color: var(--color-surface-2);
     border-radius: 5px;
     margin-top: 5px;
     
@@ -143,13 +149,13 @@ body{
     -webkit-box-orient: vertical;
     
     overflow-wrap: break-word;
-    hyphens: auto;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
     margin-bottom: 0;
     margin-top: 5px;
-    max-height: 35px;
+    line-height: 1.2;
+    max-height: 2.4em;
 }
 
 
@@ -169,7 +175,7 @@ dialog::backdrop{
     border: none;
     
     
-    background-color: rgb(100, 100, 100);
+    background-color: var(--color-surface-1);
     height: 80vh;
     width: 70vh;
     border-radius: 8px;
@@ -185,7 +191,7 @@ dialog::backdrop{
     flex-direction: column;
     height: 100%;
     width: 100%;
-    background-color: rgb(131, 131, 131);   
+    background-color: var(--color-surface-2);   
 }
 
 #divImageModalImg{
@@ -240,10 +246,10 @@ dialog p{
 }
 
 dialog button{
-    border: solid 1px rgb(107, 107, 107);
+    border: solid 1px var(--color-border);
     border-radius: 5px;
-    color: rgb(230, 230, 230);
-    background-color: rgb(146, 146, 146);
+    color: var(--color-text);
+    background-color: var(--color-surface-3);
     width: 212px;
     height: 64px;
     margin-left: 5px;
@@ -330,6 +336,133 @@ dialog button:hover{
         
     }
 }
+
+
+/* ==================== ABA INFO (configurações) ==================== */
+
+#infoColunas{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Coluna 1 é a mais larga (gráfico + resumo), coluna 2 a mais estreita (só nomes),
+   coluna 3 fica no meio (lista de log). Os números do flex-grow seguem essa proporção. */
+#colunaGrafico{
+    flex: 1.6 1 240px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+#colunaUsuariosLog{
+    flex: 1 1 130px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#colunaLogItens{
+    flex: 1.2 1 160px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+}
+
+/* Botões "chip" reutilizados no toggle Escrita/Leitura e no filtro de período */
+.chipBtn{
+    border: none;
+    border-radius: 5px;
+    padding: 6px 14px;
+    background-color: var(--color-surface-1);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    cursor: pointer;
+}
+
+.chipBtn:hover{
+    background-color: var(--color-surface-3);
+}
+
+.chipBtn.active{
+    background-color: var(--color-surface-3);
+    font-weight: bold;
+}
+
+#toggleLeituraEscrita{
+    display: flex;
+    gap: 8px;
+}
+
+#graficoCirculo{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: solid 2px var(--color-border);
+    background-color: var(--color-surface-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+#resumoUsuarios{
+    width: 100%;
+    text-align: center;
+}
+
+#resumoUsuarios p{
+    margin: 4px 0;
+}
+
+.valorUsoResumo{
+    color: var(--color-text);
+    font-weight: bold;
+}
+
+#filtroPeriodo{
+    display: flex;
+    gap: 8px;
+}
+
+.usuarioLogItem{
+    background-color: var(--color-surface-1);
+    border-radius: 5px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.usuarioLogItem:hover{
+    background-color: var(--color-surface-3);
+}
+
+.usuarioLogItem.active{
+    background-color: var(--color-surface-3);
+    font-weight: bold;
+}
+
+#tituloLogUsuario{
+    text-align: center;
+    font-size: 90%;
+    opacity: 0.8;
+}
+
+@media (max-width: 700px){
+    #infoColunas{
+        flex-direction: column;
+    }
+}
+
 
 
 
