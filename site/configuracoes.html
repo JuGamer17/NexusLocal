@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Playwrite+NZ+Basic:wght@100..400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="theme.css">
     <link rel="stylesheet" href="cssArq.css">
+    <link rel="stylesheet" href="cssConfiguracoes.css">
 </head>
 <body>
 
@@ -28,9 +29,7 @@
     </div>
 
     <div id="backgrownd">
-            <div id="caminhoo">
-                <p><i>home/configurações</i></p>
-            </div>
+            
 
             <!-- ==================== ABA INFO ==================== -->
             <div id="tabInfo" class="tab active">
@@ -48,15 +47,14 @@
                         </div>
 
                         <div id="graficoCirculo">
-                            <!-- Placeholder para gráfico — substituir com biblioteca de chart quando disponível -->
-                            <span>GRÁFICO</span>
+                            <!-- O fundo (as "fatias" da pizza) é pintado via JS em renderGraficoPizza(), com um conic-gradient -->
+                            <div id="graficoCirculoMiolo">
+                                <!-- Preenchido via JS com o total do período -->
+                            </div>
                         </div>
 
                         <div id="resumoUsuarios">
-                            <!-- Preenchido dinamicamente conforme o toggle Escrita/Leitura e o período selecionado -->
-                            <p><span class="nomeUsuarioResumo">usuario1:</span> <span class="valorUsoResumo">15Gb</span></p>
-                            <p><span class="nomeUsuarioResumo">usuario2:</span> <span class="valorUsoResumo">32Gb</span></p>
-                            <p><span class="nomeUsuarioResumo">usuario3:</span> <span class="valorUsoResumo">532Mb</span></p>
+                            <!-- Preenchido via JS por renderResumoUso() -->
                         </div>
 
                         <div id="filtroPeriodo">
@@ -68,9 +66,7 @@
 
                     <!-- Coluna 2: seleção do usuário para ver o log de itens enviados -->
                     <div id="colunaUsuariosLog">
-                        <div class="usuarioLogItem active" data-user="usuario1" onclick="selecionarUsuarioLog(this, 'usuario1')">usuario1:</div>
-                        <div class="usuarioLogItem" data-user="usuario2" onclick="selecionarUsuarioLog(this, 'usuario2')">usuario2:</div>
-                        <div class="usuarioLogItem" data-user="usuario3" onclick="selecionarUsuarioLog(this, 'usuario3')">usuario3:</div>
+                        <!-- Preenchido via JS por renderListaUsuarios() -->
                     </div>
 
                     <!-- Coluna 3: log dos itens enviados (tamanho e data) do usuário selecionado na coluna 2 -->
@@ -179,62 +175,7 @@
         </div>
     </div>
 
-    <script>
-        const tabInfo = document.getElementById('tabInfo');
-        const tabUsuarios = document.getElementById('tabUsuarios');
-        const tabEspecificacoes = document.getElementById('tabEspecificacoes');
-
-
-        function mostrarInfo() {
-            tabInfo.style.display = '';
-            tabUsuarios.style.display = 'none';
-            tabEspecificacoes.style.display = 'none';
-        }
-
-        function mostrarUsuarios() {
-            tabInfo.style.display = 'none';
-            tabUsuarios.style.display = '';
-            tabEspecificacoes.style.display = 'none';
-        }
-
-        function mostrarEspecificações() {
-            tabInfo.style.display = 'none';
-            tabUsuarios.style.display = 'none';
-            tabEspecificacoes.style.display = '';
-        }
-
-        // ---- Aba Info: interações visuais (ainda sem dados reais vindos da API) ----
-
-        function alternarTipoGrafico(botao, tipo) {
-            // Tira o "active" de todos os botões do grupo e coloca só no que foi clicado
-            document.querySelectorAll('#toggleLeituraEscrita .chipBtn').forEach(b => b.classList.remove('active'));
-            botao.classList.add('active');
-            // TODO: quando o gráfico real existir, recarregar os dados de LogAcesso filtrando por tipo_acao = tipo ('escrita' ou 'leitura')
-        }
-
-        function filtrarPeriodo(botao, periodo) {
-            document.querySelectorAll('#filtroPeriodo .chipBtn').forEach(b => b.classList.remove('active'));
-            botao.classList.add('active');
-            // TODO: recarregar estatísticas e log filtrando LogAcesso.data_hora conforme o período ('hoje' | '7dias' | '1mes')
-        }
-
-        function selecionarUsuarioLog(item, usuario) {
-            document.querySelectorAll('.usuarioLogItem').forEach(u => u.classList.remove('active'));
-            item.classList.add('active');
-            document.getElementById('tituloLogUsuario').textContent = `Itens enviados por ${usuario}`;
-            // TODO: buscar na API os registros de LogAcesso do usuário selecionado e preencher #tabelaLogBody
-        }
-
-        function salvar_e_sair(){
-            window.close();
-            window.location.href = 'index.html';
-        }
-
-        mostrarInfo();
-
-        // Salvar e Sair — fecha a página de configurações e volta para o login
-        
-    </script>
+    <script src="Js/configuracoes.js"></script>
 
 
 </body>

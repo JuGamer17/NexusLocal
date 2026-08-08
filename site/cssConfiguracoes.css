@@ -1,0 +1,174 @@
+/* ============================================================
+   cssConfiguracoes.css — estilos exclusivos da configuracoes.html
+   (o resto, compartilhado com areaArquivos.html, continua em cssArq.css)
+   ============================================================ */
+
+/* .tab é compartilhada pelas 3 abas (Info/Usuários/Especificações).
+   flex-grow:1 faz a aba ativa ocupar toda a altura sobrando dentro do #backgrownd;
+   display:flex + flex-direction:column repassa esse espaço pros filhos da aba
+   (ex: #infoColunas), que também precisam de flex-grow:1 pra aproveitar.
+   min-height:0 evita que o conteúdo force a aba a crescer além do #backgrownd
+   quando ele tiver overflow — deixa o overflow-y:auto do #backgrownd fazer o trabalho dele. */
+.tab{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+/* ==================== ABA INFO ==================== */
+
+#infoColunas{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    flex-grow: 1;
+}
+
+/* Coluna 1 é a mais larga (gráfico + resumo), coluna 2 a mais estreita (só nomes),
+   coluna 3 fica no meio (lista de log). Os números do flex-grow seguem essa proporção. */
+#colunaGrafico{
+    flex: 1.6 1 240px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+#colunaUsuariosLog{
+    flex: 1 1 130px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#colunaLogItens{
+    flex: 1.2 1 160px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+}
+
+/* Botões "chip" reutilizados no toggle Escrita/Leitura e no filtro de período */
+.chipBtn{
+    border: none;
+    border-radius: 5px;
+    padding: 6px 14px;
+    background-color: var(--color-surface-1);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    cursor: pointer;
+}
+
+.chipBtn:hover{
+    background-color: var(--color-surface-3);
+}
+
+.chipBtn.active{
+    background-color: var(--color-surface-3);
+    font-weight: bold;
+}
+
+#toggleLeituraEscrita{
+    display: flex;
+    gap: 8px;
+}
+
+#graficoCirculo{
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: solid 2px var(--color-border);
+    background-color: var(--color-surface-1); /* cor antes do JS calcular o conic-gradient (ou se não houver dados) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative; /* âncora pro #graficoCirculoMiolo, que é posicionado absoluto */
+}
+
+/* "Miolo" do gráfico de pizza (efeito donut) — fica por cima do conic-gradient,
+   com o total geral do período escrito no centro, sempre legível independente
+   das cores das fatias atrás dele. */
+#graficoCirculoMiolo{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 62%;
+    height: 62%;
+    border-radius: 50%;
+    background-color: var(--color-surface-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    font-size: 90%;
+    padding: 4px;
+}
+
+/* Bolinha colorida ao lado do nome do usuário no resumo, pra ligar visualmente
+   cada linha com a fatia correspondente no gráfico (mesma cor, mesma ordem). */
+.pontoCorUsuario{
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+#resumoUsuarios{
+    width: 100%;
+    text-align: center;
+}
+
+#resumoUsuarios p{
+    margin: 4px 0;
+}
+
+.valorUsoResumo{
+    color: var(--color-text);
+    font-weight: bold;
+}
+
+#filtroPeriodo{
+    display: flex;
+    gap: 8px;
+}
+
+.usuarioLogItem{
+    background-color: var(--color-surface-1);
+    border-radius: 5px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.usuarioLogItem:hover{
+    background-color: var(--color-surface-3);
+}
+
+.usuarioLogItem.active{
+    background-color: var(--color-surface-3);
+    font-weight: bold;
+}
+
+#tituloLogUsuario{
+    text-align: center;
+    font-size: 90%;
+    opacity: 0.8;
+}
+
+@media (max-width: 700px){
+    #infoColunas{
+        flex-direction: column;
+    }
+}
