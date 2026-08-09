@@ -172,3 +172,215 @@
         flex-direction: column;
     }
 }
+
+
+/* ==================== ABA USUÁRIOS ==================== */
+
+#usuariosColunas{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    flex-grow: 1;
+}
+
+#colunaTabelaUsuarios{
+    flex: 1.2 1 260px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto; /* se a lista de usuários crescer bastante, rola só essa coluna, não a aba inteira */
+}
+
+#colunaPermissoes{
+    flex: 1 1 220px;
+    background-color: var(--color-surface-2);
+    border-radius: 5px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0; /* mesma razão do .tab: sem isso o flex não deixa #arvorePastas encolher/rolar direito */
+}
+
+#tabelaUsuarios{
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-surface-1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+#tabelaUsuarios th,
+#tabelaUsuarios td{
+    padding: 8px;
+    text-align: center;
+}
+
+#tabelaUsuarios th:first-child,
+#tabelaUsuarios td:first-child{
+    text-align: left;
+}
+
+#tabelaUsuarios thead{
+    background-color: var(--color-surface-3);
+}
+
+.linhaUsuario{
+    cursor: pointer;
+}
+
+.linhaUsuario:hover{
+    background-color: var(--color-surface-2);
+}
+
+.linhaUsuario.active{
+    background-color: var(--color-surface-3);
+    font-weight: bold;
+}
+
+.btnRemoverUsuario{
+    border: none;
+    background-color: var(--color-surface-3);
+    color: var(--color-text);
+    border-radius: 5px;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+.btnRemoverUsuario:hover{
+    opacity: 0.8;
+}
+
+#btnNovoUsuario{
+    width: 100%;
+    padding: 8px;
+    border: dashed 1px var(--color-border);
+    border-radius: 5px;
+    background: none;
+    color: var(--color-text);
+    font-family: var(--font-body);
+    cursor: pointer;
+}
+
+#btnNovoUsuario:hover{
+    background-color: var(--color-surface-1);
+}
+
+/* Árvore de pastas do usuário selecionado — cada nível de profundidade ganha
+   um padding-left maior via JS (inline), aqui só cuidamos do espaçamento entre linhas */
+#arvorePastas{
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.itemPasta{
+    padding: 4px 0;
+}
+
+.itemPasta label{
+    cursor: pointer;
+}
+
+#edicaoSenha{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: solid 1px var(--color-border);
+    padding-top: 10px;
+    flex-shrink: 0; /* nunca deixa a área de senha ser espremida pela árvore de pastas crescendo */
+}
+
+#edicaoSenha label{
+    font-size: 90%;
+    opacity: 0.85;
+    display: block;
+    margin-bottom: 2px;
+}
+
+#edicaoSenha input{
+    background-color: var(--color-input-bg);
+    color: var(--color-input-text);
+    border-radius: 5px;
+    padding: 6px;
+    border: none;
+    width: 100%;
+}
+
+#btnSalvarUsuario{
+    background-color: var(--color-surface-3);
+    color: var(--color-text);
+    border-radius: 5px;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    align-self: flex-start;
+}
+
+#btnSalvarUsuario:hover{
+    opacity: 0.85;
+}
+
+@media (max-width: 700px){
+    #usuariosColunas{
+        flex-direction: column;
+    }
+}
+
+
+/* ==================== ABA ESPECIFICAÇÕES ==================== */
+
+#listaEspecificacoes{
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 15px;
+}
+
+#listaEspecificacoes p{
+    margin: 0;
+}
+
+/* Valor menor e mais apagado que o rótulo — igual no wireframe, onde os números
+   aparecem visivelmente menores que o texto da pergunta */
+.valorEspecificacao{
+    font-size: 85%;
+    opacity: 0.85;
+    margin-left: 4px;
+}
+
+#inputEspacoMaximo{
+    background-color: var(--color-surface-1);
+    color: var(--color-text);
+    border: solid 1px var(--color-border);
+    border-radius: 5px;
+    padding: 4px 10px;
+    width: 90px;
+    font-family: var(--font-body);
+    margin-left: 6px;
+}
+
+#btnAplicarEspacoMaximo{
+    background-color: var(--color-surface-1);
+    color: var(--color-text);
+    border: solid 1px var(--color-border);
+    border-radius: 5px;
+    padding: 4px 14px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    margin-left: 8px;
+}
+
+#btnAplicarEspacoMaximo:hover{
+    background-color: var(--color-surface-3);
+}
+
+#notaEspecificacoes{
+    margin-top: 20px;
+    font-style: italic;
+    font-size: 90%;
+    opacity: 0.8;
+}

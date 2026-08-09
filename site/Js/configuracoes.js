@@ -46,11 +46,24 @@ function salvar_e_sair(){
 // `await apiBuscarUsuarios()` e tratam o retorno como uma lista comum.
 // ======================================================================
 
-// Simula a tabela Usuario (só o campo "usuario", que é o que a UI precisa aqui)
-const MOCK_USUARIOS = ['usuario1', 'usuario2', 'usuario3'];
+// Simula a tabela Usuario (id, usuario, isADM) + o acesso "rápido" dele à pasta Home
+// (editado direto na tabela da aba Usuários). É a MESMA base usada pela aba Info e
+// pela aba Usuários — centralizar aqui evita ter duas listas de usuário que podem
+// ficar dessincronizadas (ex: apagar um usuário aqui e ele continuar aparecendo lá).
+let MOCK_USUARIOS_DB = [
+    { id: 1, usuario: 'usuario1', isADM: true,  homeLeitura: true,  homeEscrita: true  },
+    { id: 2, usuario: 'usuario2', isADM: false, homeLeitura: false, homeEscrita: true  },
+    { id: 3, usuario: 'usuario3', isADM: false, homeLeitura: true,  homeEscrita: false },
+];
+
+// GET /usuarios (futuro) provavelmente devolveria só os nomes pra quem só precisa
+// disso (como a aba Info) — essa função já isola essa parte.
+function listaNomesUsuarios() {
+    return MOCK_USUARIOS_DB.map(u => u.usuario);
+}
 
 // Paleta fixa pro gráfico de pizza: cada usuário pega uma cor pelo índice dele em
-// MOCK_USUARIOS (usuario1 sempre azul, usuario2 sempre laranja, etc.), e essa MESMA
+// listaNomesUsuarios() (usuario1 sempre azul, usuario2 sempre laranja, etc.), e essa MESMA
 // cor é usada tanto na fatia da pizza quanto na bolinha ao lado do nome no resumo.
 // Se um dia tiver mais usuários que cores, o `% CORES_GRAFICO.length` faz a lista repetir.
 const CORES_GRAFICO = ['#6fa8dc', '#f6b26b', '#93c47d', '#c27ba0', '#ffd966', '#e06666'];
@@ -81,14 +94,14 @@ const MOCK_LOG_ACESSO = [
 
 // GET /usuarios  (futuro)
 function apiBuscarUsuarios() {
-    return Promise.resolve(MOCK_USUARIOS);
+    return Promise.resolve(listaNomesUsuarios());
 }
 
 // GET /log-acesso/resumo?tipo_acao=escrita&periodo=hoje  (futuro)
 // Retorna o total de KB por usuário, filtrado por tipo de ação e período.
 function apiBuscarResumoUso(tipo, periodo) {
     const totais = {};
-    MOCK_USUARIOS.forEach(usuario => totais[usuario] = 0); // garante que todo mundo aparece, mesmo com 0
+    listaNomesUsuarios().forEach(usuario => totais[usuario] = 0); // garante que todo mundo aparece, mesmo com 0
 
     MOCK_LOG_ACESSO
         .filter(linha => linha.tipo_acao === tipo && dentroDoPeriodo(linha.data_hora, periodo))
@@ -149,11 +162,12 @@ const estadoInfo = {
 
 async function renderResumoUso() {
     const totais = await apiBuscarResumoUso(estadoInfo.tipoGrafico, estadoInfo.periodo);
+    const nomes = listaNomesUsuarios();
 
     const container = document.getElementById('resumoUsuarios');
     container.innerHTML = '';
 
-    MOCK_USUARIOS.forEach((usuario, i) => {
+    nomes.forEach((usuario, i) => {
         const cor = CORES_GRAFICO[i % CORES_GRAFICO.length];
         const p = document.createElement('p');
         p.innerHTML = `<span class="pontoCorUsuario" style="background-color:${cor};"></span>` +
@@ -164,18 +178,18 @@ async function renderResumoUso() {
 
     // Reaproveita os mesmos `totais` que acabamos de buscar — não faz sentido
     // chamar a "API" de novo só pra desenhar o gráfico com os mesmos números.
-    renderGraficoPizza(totais);
+    renderGraficoPizza(totais, nomes);
 }
 
 // Pinta o #graficoCirculo com um conic-gradient: uma "fatia" de cor por usuário,
 // do tamanho proporcional ao que ele representa do total. O conic-gradient entende
 // as paradas em porcentagem (0% a 100% = 0° a 360°), então só precisamos ir
 // acumulando a porcentagem de cada fatia conforme passamos pelos usuários.
-function renderGraficoPizza(totais) {
+function renderGraficoPizza(totais, nomes) {
     const circulo = document.getElementById('graficoCirculo');
     const miolo = document.getElementById('graficoCirculoMiolo');
 
-    const totalGeral = MOCK_USUARIOS.reduce((soma, usuario) => soma + totais[usuario], 0);
+    const totalGeral = nomes.reduce((soma, usuario) => soma + totais[usuario], 0);
 
     if (totalGeral === 0) {
         circulo.style.background = 'var(--color-surface-1)';
@@ -184,7 +198,7 @@ function renderGraficoPizza(totais) {
     }
 
     let acumulado = 0;
-    const fatias = MOCK_USUARIOS.map((usuario, i) => {
+    const fatias = nomes.map((usuario, i) => {
         const cor = CORES_GRAFICO[i % CORES_GRAFICO.length];
         const inicio = acumulado;
         acumulado += (totais[usuario] / totalGeral) * 100;
@@ -283,5 +297,261 @@ function inicializarAbaInfo() {
     renderListaUsuarios(); // essa função já dispara a seleção do primeiro usuário e o render do log dele
 }
 
+
+// ======================================================================
+// ABA USUÁRIOS
+// Mesma lógica da aba Info: dados mockados + funções "apiX" que devolvem
+// Promise, só pra manter o mesmo formato que uma chamada real terá depois.
+// ======================================================================
+
+// Simula a tabela Pasta, já organizada em árvore (cada pasta sabe quem são os filhos).
+// No banco real isso é uma tabela plana com Pasta_id apontando pro pai — aqui já
+// deixamos aninhado porque é mais fácil de desenhar a árvore a partir disso.
+const MOCK_PASTAS = [
+    {
+        id: 1, nome: 'Home',
+        filhos: [
+            {
+                id: 2, nome: 'Edição',
+                filhos: [
+                    { id: 3, nome: 'A editar', filhos: [] },
+                    { id: 4, nome: 'A revisar', filhos: [] },
+                ],
+            },
+            { id: 5, nome: 'Vídeos prontos', filhos: [] },
+        ],
+    },
+];
+
+// Simula a tabela UsuarioPasta, simplificada por enquanto pra um único booleano
+// "tem acesso" por pasta (o real tem pode_ler/pode_escrever separados — fica de
+// TODO pra quando ligar na API de verdade). Chave = nome do usuário, valor = { pastaId: bool }.
+const MOCK_ACESSOS_PASTA = {
+    usuario1: { 1: true, 2: true, 3: true, 4: true, 5: true },
+    usuario2: { 1: true, 2: true, 3: false, 4: true, 5: false },
+    usuario3: { 1: true, 2: false, 3: false, 4: false, 5: true },
+};
+
+const estadoUsuarios = {
+    usuarioSelecionado: null,
+};
+
+let proximoIdUsuario = MOCK_USUARIOS_DB.length + 1;
+
+
+// ---- Render: tabela de usuários ----
+
+function renderTabelaUsuarios() {
+    const corpo = document.getElementById('tabelaUsuariosBody');
+    corpo.innerHTML = '';
+
+    MOCK_USUARIOS_DB.forEach(usuario => {
+        const linha = document.createElement('tr');
+        linha.className = 'linhaUsuario' + (usuario.usuario === estadoUsuarios.usuarioSelecionado ? ' active' : '');
+        linha.onclick = () => selecionarUsuario(usuario.usuario);
+
+        const tdNome = document.createElement('td');
+        tdNome.textContent = usuario.usuario + ':';
+        linha.appendChild(tdNome);
+
+        linha.appendChild(criarCelulaCheckboxUsuario(usuario, 'homeLeitura'));
+        linha.appendChild(criarCelulaCheckboxUsuario(usuario, 'homeEscrita'));
+        linha.appendChild(criarCelulaCheckboxUsuario(usuario, 'isADM'));
+
+        const tdRemover = document.createElement('td');
+        const btnRemover = document.createElement('button');
+        btnRemover.type = 'button';
+        btnRemover.className = 'btnRemoverUsuario';
+        btnRemover.textContent = 'x';
+        btnRemover.onclick = (evento) => {
+            evento.stopPropagation(); // senão o clique também "seleciona" a linha que acabamos de apagar
+            removerUsuario(usuario.usuario);
+        };
+        tdRemover.appendChild(btnRemover);
+        linha.appendChild(tdRemover);
+
+        corpo.appendChild(linha);
+    });
+}
+
+// Cria uma <td> com checkbox pra um campo booleano do usuário (homeLeitura, homeEscrita ou isADM)
+function criarCelulaCheckboxUsuario(usuario, campo) {
+    const td = document.createElement('td');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = usuario[campo];
+    checkbox.onclick = (evento) => evento.stopPropagation(); // clicar no checkbox não deve "selecionar a linha" também
+    checkbox.onchange = () => alternarPermissaoUsuario(usuario, campo);
+    td.appendChild(checkbox);
+    return td;
+}
+
+function alternarPermissaoUsuario(usuario, campo) {
+    usuario[campo] = !usuario[campo];
+    // TODO: PATCH /usuarios/{id} no futuro — atualiza Usuario.isADM ou a linha da
+    // pasta Home em UsuarioPasta, dependendo do campo
+}
+
+
+// ---- Render: árvore de pastas do usuário selecionado ----
+
+function renderArvorePastas() {
+    const container = document.getElementById('arvorePastas');
+    container.innerHTML = '';
+
+    const usuario = estadoUsuarios.usuarioSelecionado;
+    if (!usuario) {
+        container.innerHTML = '<p style="opacity:0.7; text-align:center;">Selecione um usuário na tabela ao lado.</p>';
+        return;
+    }
+
+    if (!MOCK_ACESSOS_PASTA[usuario]) MOCK_ACESSOS_PASTA[usuario] = {};
+    const acessos = MOCK_ACESSOS_PASTA[usuario];
+
+    // Percorre a árvore recursivamente: desenha a pasta atual, depois cada filho
+    // (um nível mais indentado), depois os filhos dos filhos, etc.
+    function montarItem(pasta, profundidade) {
+        const linha = document.createElement('div');
+        linha.className = 'itemPasta';
+        linha.style.paddingLeft = (profundidade * 18) + 'px';
+
+        const label = document.createElement('label');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = !!acessos[pasta.id];
+        checkbox.onchange = () => alternarAcessoPasta(usuario, pasta.id, checkbox.checked);
+
+        label.appendChild(checkbox);
+        label.append(' ' + pasta.nome);
+        linha.appendChild(label);
+        container.appendChild(linha);
+
+        pasta.filhos.forEach(filho => montarItem(filho, profundidade + 1));
+    }
+
+    MOCK_PASTAS.forEach(pasta => montarItem(pasta, 0));
+}
+
+function alternarAcessoPasta(usuario, pastaId, temAcesso) {
+    MOCK_ACESSOS_PASTA[usuario][pastaId] = temAcesso;
+    // TODO: POST/DELETE em /usuarios/{id}/pastas/{pastaId} no futuro (linha em UsuarioPasta)
+}
+
+
+// ---- Seleção de usuário, adicionar, remover, senha ----
+
+function selecionarUsuario(usuario) {
+    estadoUsuarios.usuarioSelecionado = usuario;
+    document.getElementById('senhaUsuario').value = '';
+    document.getElementById('confirmarSenha').value = '';
+    renderTabelaUsuarios(); // só pra marcar a linha ativa
+    renderArvorePastas();
+}
+
+function adicionarUsuario() {
+    const novoId = proximoIdUsuario++;
+    const novoNome = `usuario${novoId}`; // por enquanto um nome automático; um formulário de nome real fica pro futuro
+
+    MOCK_USUARIOS_DB.push({ id: novoId, usuario: novoNome, isADM: false, homeLeitura: false, homeEscrita: false });
+    MOCK_ACESSOS_PASTA[novoNome] = {}; // nenhuma pasta marcada ainda
+
+    selecionarUsuario(novoNome); // já seleciona o usuário novo pra você preencher os dados dele
+
+    // A aba Info também depende da lista de usuários (listaNomesUsuarios()), então
+    // atualiza ela também — esse é o benefício de ter uma única base de dados mockada.
+    renderResumoUso();
+    renderListaUsuarios();
+
+    // TODO: POST /usuarios no futuro
+}
+
+function removerUsuario(usuario) {
+    const confirmado = confirm(`Remover ${usuario}? Essa ação não pode ser desfeita.`);
+    if (!confirmado) return;
+
+    MOCK_USUARIOS_DB = MOCK_USUARIOS_DB.filter(u => u.usuario !== usuario);
+    delete MOCK_ACESSOS_PASTA[usuario];
+
+    if (estadoUsuarios.usuarioSelecionado === usuario) {
+        estadoUsuarios.usuarioSelecionado = null;
+    }
+
+    renderTabelaUsuarios();
+    renderArvorePastas();
+    renderResumoUso();
+    renderListaUsuarios();
+
+    // TODO: DELETE /usuarios/{id} no futuro
+}
+
+function salvarSenhaUsuario() {
+    const usuario = estadoUsuarios.usuarioSelecionado;
+    if (!usuario) {
+        alert('Selecione um usuário primeiro.');
+        return;
+    }
+
+    const senha = document.getElementById('senhaUsuario').value;
+    const confirmarSenha = document.getElementById('confirmarSenha').value;
+
+    if (!senha || senha !== confirmarSenha) {
+        alert('As senhas estão vazias ou não coincidem.');
+        return;
+    }
+
+    // TODO: PATCH /usuarios/{id} no futuro, mandando a senha pro backend fazer o hash com bcrypt
+    alert(`Senha de ${usuario} atualizada (simulado — nada foi salvo de verdade ainda).`);
+    document.getElementById('senhaUsuario').value = '';
+    document.getElementById('confirmarSenha').value = '';
+}
+
+function inicializarAbaUsuarios() {
+    renderTabelaUsuarios();
+    if (MOCK_USUARIOS_DB.length > 0) {
+        selecionarUsuario(MOCK_USUARIOS_DB[0].usuario);
+    }
+}
+
+
+// ======================================================================
+// ABA ESPECIFICAÇÕES
+// Simula a tabela MetaDados (config global de espaço máximo da nuvem)
+// ======================================================================
+
+let MOCK_ESPACO_MAXIMO_KB = 500 * 1024 * 1024; // 500Gb, na mesma unidade (KB) que o resto do sistema usa
+
+function aplicarEspacoMaximo() {
+    const input = document.getElementById('inputEspacoMaximo');
+    const kb = converterParaKb(input.value);
+
+    if (kb === null) {
+        alert('Digite um valor válido, no formato "500Gb" ou "800Mb".');
+        return;
+    }
+
+    MOCK_ESPACO_MAXIMO_KB = kb;
+    input.value = formatarTamanho(kb); // reescreve já formatado, confirmando visualmente o que foi entendido
+    // TODO: PATCH /metadados no futuro (tabela MetaDados.espacoMaximoNuvem_kb)
+    alert(`Espaço máximo atualizado para ${formatarTamanho(kb)} (simulado — nada foi salvo de verdade ainda).`);
+}
+
+// Entende textos tipo "500Gb", "800 Mb", "1.5gb" e devolve o valor em KB
+// (mesma unidade que tamanho_kb usa em Arquivo e MetaDados no banco real).
+// Reaproveita formatarTamanho() (definida lá em cima, na aba Info) pro caminho inverso.
+function converterParaKb(texto) {
+    const match = texto.trim().match(/^([\d.,]+)\s*(kb|mb|gb)$/i);
+    if (!match) return null;
+
+    const numero = parseFloat(match[1].replace(',', '.'));
+    if (isNaN(numero)) return null;
+
+    const unidade = match[2].toLowerCase();
+    if (unidade === 'gb') return Math.round(numero * 1024 * 1024);
+    if (unidade === 'mb') return Math.round(numero * 1024);
+    return Math.round(numero);
+}
+
+
 mostrarInfo();
 inicializarAbaInfo();
+inicializarAbaUsuarios();

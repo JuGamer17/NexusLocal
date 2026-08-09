@@ -84,88 +84,69 @@
             <div id="tabUsuarios" class="tab">
                 <h2>Gestão de Usuários</h2>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <p>Usuários cadastrados:</p>
-                    <button id="btnAdicionarUsuario" style="background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 8px 20px; cursor: pointer; font-family: var(--font-body);">+ Adicionar</button>
+                <div id="usuariosColunas">
+
+                    <!-- Coluna A: tabela de usuários, com toggles rápidos de leitura/escrita
+                         (referentes à pasta Home) e admin, mais o botão de remover -->
+                    <div id="colunaTabelaUsuarios">
+                        <table id="tabelaUsuarios">
+                            <thead>
+                                <tr>
+                                    <th>Usuários</th>
+                                    <th>leitura</th>
+                                    <th>escrita</th>
+                                    <th>admin</th>
+                                    <th>remover</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaUsuariosBody">
+                                <!-- Preenchido via JS por renderTabelaUsuarios() -->
+                            </tbody>
+                        </table>
+
+                        <button type="button" id="btnNovoUsuario" onclick="adicionarUsuario()">+ novo usuário</button>
+                    </div>
+
+                    <!-- Coluna B: árvore de pastas que o usuário selecionado pode acessar,
+                         mais a troca de senha dele -->
+                    <div id="colunaPermissoes">
+                        <div id="arvorePastas">
+                            <!-- Preenchido via JS por renderArvorePastas() -->
+                        </div>
+
+                        <div id="edicaoSenha">
+                            <div>
+                                <label for="senhaUsuario">Senha</label>
+                                <input type="password" id="senhaUsuario">
+                            </div>
+                            <div>
+                                <label for="confirmarSenha">Confirmar senha</label>
+                                <input type="password" id="confirmarSenha">
+                            </div>
+                            <button type="button" id="btnSalvarUsuario" onclick="salvarSenhaUsuario()">Confirmar</button>
+                        </div>
+                    </div>
+
                 </div>
-
-                <div id="listaUsuarios" style="display: flex; flex-direction: column; gap: 5px;">
-                    <!-- Exemplo de usuário na lista -->
-                    <div class="usuarioCard" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <p>user1</p>
-                        <button id="btnRemoverUser1" style="border: none; background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 4px 8px; cursor: pointer;">x</button>
-                    </div>
-
-                    <div class="usuarioCard" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <p>user2</p>
-                        <button id="btnRemoverUser2" style="border: none; background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 4px 8px; cursor: pointer;">x</button>
-                    </div>
-
-                    <div class="usuarioCard" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <p>user3</p>
-                        <button id="btnRemoverUser3" style="border: none; background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 4px 8px; cursor: pointer;">x</button>
-                    </div>
-
-                    <!-- Exemplo de permissões por pasta, leitura/escrita -->
-                    <div class="permissoesUser" style="background-color: var(--color-surface-1); border-radius: 5px; padding: 8px; margin-top: 5px;">
-                        <p>Permissões — user1:</p>
-                        <label><input type="checkbox"> Home — Leitura</label>
-                        <label><input type="checkbox"> Home — Escrita</label>
-                        <label><input type="checkbox"> Edição — Leitura</label>
-                        <label><input type="checkbox"> Edição — Escrita</label>
-                        <label><input type="checkbox"> A editar — Leitura</label>
-                        <label><input type="checkbox"> A editar — Escrita</label>
-                        <label><input type="checkbox"> A revisar — Leitura</label>
-                        <label><input type="checkbox"> A revisar — Escrita</label>
-                        <label><input type="checkbox"> Vídeos prontos — Leitura</label>
-                        <label><input type="checkbox"> Vídeos prontos — Escrita</label>
-                    </div>
-                </div>
-
-                <!-- Modal de edição de senha do usuário -->
-                <dialog id="modalEdicaoUsuario" style="border: none; border-radius: 8px;">
-                    <div id="backgrowndModal" style="display: flex; flex-direction: column; height: 100%; width: 100%; background-color: var(--color-surface-1);">
-                        <h2>Editar Usuário</h2>
-                        <label for="senhaUsuario">Senha:</label>
-                        <input type="password" id="senhaUsuario" style="background-color: var(--color-input-bg); color: var(--color-input-text); width: 75%; height: 25px; border-radius: 5px;">
-                        <br><br>
-                        <label for="confirmarSenha">Confirmar senha:</label>
-                        <input type="password" id="confirmarSenha" style="background-color: var(--color-input-bg); color: var(--color-input-text); width: 75%; height: 25px; border-radius: 5px;">
-                        <br><br>
-                        <button id="btnSalvarUsuario" style="background-color: var(--color-surface-3); color: var(--color-text); border-radius: 5px; padding: 10px 20px; cursor: pointer; font-family: var(--font-body);">Confirmar</button>
-                    </div>
-                </dialog>
-
-                <p style="margin-top: 10px; text-align: center;">
-                    Ao clicar em um usuário específico, é possível alterar sua senha e permissões.
-                </p>
             </div>
 
             <!-- ==================== ABA ESPECIFICAÇÕES ==================== -->
             <div id="tabEspecificacoes" class="tab">
                 <h2>Especificações do Sistema</h2>
 
-                <table style="width: 100%; border-collapse: collapse; background-color: var(--color-surface-1); border-radius: 5px; overflow: hidden;">
-                    <tr style="border-bottom: solid 1px var(--color-border);">
-                        <td style="padding: 10px; text-align: left; font-weight: bold;">Tamanho máximo do disco onde instalado:</td>
-                        <td style="padding: 10px; text-align: center;">123,8Gb</td>
-                    </tr>
-                    <tr style="border-bottom: solid 1px var(--color-border);">
-                        <td style="padding: 10px; text-align: left; font-weight: bold;">Espaço ocupado por itens não-nuvem:</td>
-                        <td style="padding: 10px; text-align: center;">250,5Gb</td>
-                    </tr>
-                    <tr style="border-bottom: solid 1px var(--color-border);">
-                        <td style="padding: 10px; text-align: left; font-weight: bold;">Espaço ocupado por itens da nuvem:</td>
-                        <td style="padding: 10px; text-align: center;">500Gb</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; text-align: left; font-weight: bold;">Espaço máximo de uso da NexusLocal:</td>
-                        <td style="padding: 10px; text-align: center;">932,6Gb</td>
-                    </tr>
-                </table>
+                <div id="listaEspecificacoes">
+                    <p>Tamanho máximo do disco onde instalado: <span class="valorEspecificacao">932,6Gb</span></p>
+                    <p>Espaço ocupado por itens não nuvem: <span class="valorEspecificacao">123,8Gb</span></p>
+                    <p>Espaço ocupado por itens da nuvem: <span class="valorEspecificacao">250,5Gb</span></p>
+                    <p>
+                        Espaço máximo de uso da NexusLocal:
+                        <input type="text" id="inputEspacoMaximo" value="500Gb">
+                        <button type="button" id="btnAplicarEspacoMaximo" onclick="aplicarEspacoMaximo()">Aplicar</button>
+                    </p>
+                </div>
 
-                <p style="margin-top: 15px; font-style: italic;">
-                    Campos de somente leitura — informações informativas. Clique em "Aplicar" para confirmar a visualização.
+                <p id="notaEspecificacoes">
+                    Os três primeiros campos são informativos (somente leitura). Só o espaço máximo de uso é editável — digite um valor (ex: "500Gb") e clique em "Aplicar".
                 </p>
             </div>
 
