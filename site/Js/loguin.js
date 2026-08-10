@@ -1,11 +1,21 @@
 //apos atualizar aqui usar o CNTR + SHIFT + R pra recarregar o cache, ou so muda algo no HTML
 //algo assim <script src="script.js?v=<?=time()?>"></script>
+//aqui tera um usuario padrão para casos de testes locais sem a API.
+
+const user = "ADMIN";
+const senha = "SENHA123321"
 
 const button  = document.getElementById("logar");
 
 button.addEventListener('click', async function(){
     const sndUser = document.getElementById("Usuario").value;
     const sndPassword = document.getElementById("Senha").value;
+
+    if(sndUser == user && sndPassword == senha){
+        localStorage.setItem("token", "testMode");
+        window.location.href = "areaArquivos.html";
+    }
+    
 
 
     const formData = new FormData();

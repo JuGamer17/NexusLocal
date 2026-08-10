@@ -22,8 +22,13 @@ function mostrarEspecificações() {
 }
 
 function salvar_e_sair(){
-    window.close();
-    window.location.href = 'index.html';
+    //Aqui manda os dados novos para a Nuvem na API
+    const espaco = document.getElementById('inputEspacoMaximo');
+    const kb = converterParaKb(espaco.value);
+    //mandar com fecth kb para novo tamanho da nuvem se houver, 
+    //e novos usuarios com suas permições se houver, atuais MOCK_USUARIOS_DB e MOCK_ACESSOS_PASTA.
+    //nada vai ser realmente salvo de verdade pois é apenas simulação essa função.
+    window.location.href = 'areaArquivos.html';
 }
 
 

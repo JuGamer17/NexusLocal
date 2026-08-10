@@ -9,6 +9,8 @@ const clone = template.content.cloneNode(true);
 const token = localStorage.getItem("token");
 const inputItem = document.getElementById("inputArquivo");
 
+
+
 async function loadFiles() {
     
 
@@ -124,7 +126,32 @@ async function loadFiles() {
         //}
  }
 
-loadFiles();
+function testMode(){
+    const clone = template.content.cloneNode(true);
+    const div = clone.querySelector(".arquivos");
+    clone.querySelector(".nomeTemplate").textContent = `Adicionar Item`;
+    const img = clone.querySelector(".imagemTenplate");
+    img.src = `Images/mais.png`;
+
+    div.addEventListener("click", (e) =>{
+        const divClick = e.currentTarget;
+        inputItem.click();
+        
+    });
+
+
+    
+    
+    areaArquivos.append(clone);
+}
+
+if(token == "testMode"){
+    testMode();
+}else{
+    loadFiles();
+}
+
+
 
 
 
