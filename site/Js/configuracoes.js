@@ -1,3 +1,59 @@
+// ======================================================================
+// Verificação de acesso — só admin pode ficar nesta página
+// Roda antes de qualquer outra coisa no arquivo, de propósito.
+// ======================================================================
+
+const token = localStorage.getItem('token');
+
+// GET /usuarios/me (futuro) — o backend confirmaria, com o token em mãos, se quem
+// está pedindo é admin ou não. Por enquanto simula isso localmente (mesma ideia do
+// usuarioEhAdmin() no fileManager.js), mas já devolvendo uma Promise — a MESMA
+// convenção "apiX() devolve Promise" que o resto deste arquivo já usa.
+function apiVerificarAdmin() {
+    // TODO: trocar por algo tipo:
+    //   fetch('/api/usuarios/me', { headers: { Authorization: `Bearer ${token}` } })
+    //       .then(r => r.ok ? r.json() : Promise.reject())
+    //       .then(dados => dados.isADM)
+    // O backend ainda não tem essa rota nem a claim "isADM" no token — mesmo TODO
+    // já deixado no fileManager.js, perto do usuarioEhAdmin().
+    if (token === 'testMode') return Promise.resolve(true);
+
+    const payload = decodificarPayloadToken(token);
+    return Promise.resolve(!!(payload && payload.isADM));
+}
+
+// Mesmo helper de decodificar JWT usado no fileManager.js — repetido aqui porque
+// essa página carrega um script separado (não reaproveita o outro arquivo).
+function decodificarPayloadToken(tokenJwt) {
+    try {
+        const partePayload = tokenJwt.split('.')[1];
+        const jsonPayload = atob(partePayload.replace(/-/g, '+').replace(/_/g, '/'));
+        return JSON.parse(jsonPayload);
+    } catch (erro) {
+        return null;
+    }
+}
+
+async function verificarAcessoAdmin() {
+    if (!token) {
+        window.location.href = 'index.html'; // nem logado — manda pro login
+        return;
+    }
+
+    const ehAdmin = await apiVerificarAdmin();
+
+    if (!ehAdmin) {
+        alert('Você não tem permissão para acessar as configurações.');
+        window.location.href = 'areaArquivos.html';
+        return; // fica escondido — nem revela o conteúdo antes de sair da página
+    }
+
+    document.body.style.visibility = 'visible';
+}
+
+verificarAcessoAdmin();
+
+
 const tabInfo = document.getElementById('tabInfo');
 const tabUsuarios = document.getElementById('tabUsuarios');
 const tabEspecificacoes = document.getElementById('tabEspecificacoes');
