@@ -9,6 +9,20 @@ const clone = template.content.cloneNode(true);
 const token = localStorage.getItem("token");
 const inputItem = document.getElementById("inputArquivo");
 
+let arquivoModalAtual = null; // nome do arquivo aberto no modal agora — usado pelo Excluir/Baixar
+
+// Preenche e abre o modal a partir da div clicada na grade de arquivos. Ficou numa
+// função só porque loadFiles() e testMode() faziam exatamente a mesma coisa aqui,
+// só que copiada e colada duas vezes.
+function abrirModalArquivo(divClick) {
+    arquivoModalAtual = divClick.querySelector(".nomeTemplate").textContent;
+
+    document.getElementById("nomeArquivo").textContent = arquivoModalAtual;
+    document.getElementById("tamanhoArquivo").textContent = divClick.querySelector(".tamanhoTemplate").textContent;
+    document.getElementById("modalImage").src = divClick.querySelector(".imagemTenplate").src;
+    modal.showModal();
+}
+
 
 // ---- Controle de acesso ao botão "configurações" ----
 
@@ -110,11 +124,7 @@ async function loadFiles() {
         const div = clone.querySelector(".arquivos");
 
         div.addEventListener("click", (e) =>{
-            const divClick = e.currentTarget;
-            document.getElementById("nomeArquivo").textContent = divClick.querySelector(".nomeTemplate").textContent;
-            document.getElementById("tamanhoArquivo").textContent = divClick.querySelector(".tamanhoTemplate").textContent;
-            document.getElementById("modalImage").src = divClick.querySelector(".imagemTenplate").src;
-            modal.showModal();
+            abrirModalArquivo(e.currentTarget);
         });
         
 
@@ -218,11 +228,7 @@ function testMode(){
         const div = clone.querySelector(".arquivos");
 
         div.addEventListener("click", (e) =>{
-            const divClick = e.currentTarget;
-            document.getElementById("nomeArquivo").textContent = divClick.querySelector(".nomeTemplate").textContent;
-            document.getElementById("tamanhoArquivo").textContent = divClick.querySelector(".tamanhoTemplate").textContent;
-            document.getElementById("modalImage").src = divClick.querySelector(".imagemTenplate").src;
-            modal.showModal();
+            abrirModalArquivo(e.currentTarget);
         });
 
         areaArquivos.append(clone);
@@ -312,8 +318,58 @@ inputItem.addEventListener("change", async () => {
 });
 
 
-bntExcluir.addEventListener("click", () =>{
-    modal.close();
+bntExcluir.addEventListener("click", async () => {
+    if (!arquivoModalAtual) {
+        modal.close();
+        return;
+    }
+
+    const confirmado = confirm(`Excluir "${arquivoModalAtual}"? Essa ação não pode ser desfeita.`);
+    if (!confirmado) return;
+
+    if (token === "testMode") {
+        // Modo teste: remove só do array local e redesenha a lista, sem tentar API
+        ARQUIVOS_TESTE = ARQUIVOS_TESTE.filter(arquivo => arquivo.name !== arquivoModalAtual);
+        modal.close();
+        testMode();
+        return;
+    }
+
+    // TODO: o backend ainda não tem nenhuma rota de exclusão (só existem /login,
+    // /upload, /loadFiles e /getFile em api/app/main.py). Quando existir algo
+    // tipo DELETE /deleteFile/{filename}, essa chamada já deve funcionar, já
+    // que a URL/método abaixo seguem o mesmo padrão das outras rotas.
+    try {
+        const response = await fetch(`/api/deleteFile/${arquivoModalAtual}`, {
+            method: "DELETE",
+            headers: { "Authorization": "Bearer " + token }
+        });
+
+        if (response.ok) {
+            modal.close();
+            loadFiles();
+        } else {
+            alert("Não foi possível excluir o arquivo.");
+        }
+    } catch (erro) {
+        alert("Essa ação ainda depende de uma rota de exclusão que o backend ainda não tem.");
+    }
 });
+
+// Fecha o modal clicando fora dele (no backdrop escuro). Clicar no backdrop de um
+// <dialog> nativo dispara um click cujo target é o próprio elemento <dialog> —
+// diferente de clicar em algo DENTRO dele (o alvo aí seria o filho clicado, tipo
+// #backgrowndModal ou um botão). Por isso o `e.target === modal` funciona: só
+// é verdadeiro quando o clique foi na área vazia ao redor do conteúdo.
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal.close();
+    }
+});
+
+function sair(){
+    localStorage.setItem("token", "");
+    window.location.href = "index.html";
+}
 
 

@@ -21,18 +21,17 @@ body{
     
 }
 
-#loguin{
+.telaLoguin{
     max-width: min(100%, 335px);
     padding: 15px;
     background-color: var(--color-surface-1); /*rgb(235, 235, 235);*/
-    height: 30%;
     margin-top: auto;
     margin-bottom: auto;
     width:35%;
     border-radius: 5px;
 }
 
-#loguin p{
+.telaLoguin p{
     font-family: var(--font-display);
     text-align: center;
     font-size: 200%;
@@ -41,22 +40,81 @@ body{
     margin-top: 0;
 }
 
-#loguin input{
+.telaLoguin input{
     color: var(--color-input-text);
     border: hidden;
     background-color: var(--color-input-bg);
-    width: 75%;
     height: 25px;
-    margin-bottom: 10px;
     border-radius: 5px;
 }
 
-#loguin label{
+.telaLoguin label{
     color: var(--color-text);
-    
 }
 
-#button{
+/* Cada campo empilha: rótulo centralizado em cima, input embaixo ocupando a
+   largura toda. Isso evita de vez o problema de "colunas alinhadas" — não tem
+   mais rótulos de tamanhos diferentes disputando espaço na mesma linha, então
+   funciona bem mesmo com um bem mais comprido que os outros ("Email para
+   recuperação:" vs "Senha:"), sem apertar ninguém. */
+.camposLoguin{
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* espaço ENTRE cada campo (ex: bloco da Senha até o bloco da Confirmar senha) */
+    margin-bottom: 15px;
+}
+
+.campoLoguin{
+    display: flex;
+    flex-direction: column;
+    gap: 6px; /* espaço só entre o rótulo e o input DELE, menor que o gap acima */
+}
+
+.campoLoguin label{
+    text-align: center;
+}
+
+.campoLoguin input{
+    width: 100%;
+}
+
+/* Só na tela de LOGIN volta pro lado a lado (rótulo + campo na mesma linha) —
+   aqui os rótulos ("Usuario:", "Senha:") são parecidos em tamanho, cabem numa
+   linha só sem apertar, e fica mais compacto. As outras telas continuam
+   empilhadas (regra geral ali em cima). O #telaLogin no começo do seletor dá
+   mais "peso" (especificidade) pra essas regras vencerem as gerais só aqui. */
+#telaLogin .camposLoguin{
+    display: grid;
+    grid-template-columns: auto minmax(90px, 1fr);
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 10px;
+}
+
+#telaLogin .campoLoguin{
+    display: contents;
+}
+
+#telaLogin .campoLoguin label{
+    text-align: left;
+}
+
+.telaLoguin a{
+    display: block;
+    text-align: center;
+    color: var(--color-text);
+    font-size: 85%;
+    opacity: 0.85;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.telaLoguin a:hover{
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.button{
     
 
     display: flex;
@@ -66,7 +124,7 @@ body{
     
 }
 
-#button button{
+.button button{
     cursor: pointer;
     transition: 0.3s;
     border: hidden;
@@ -76,11 +134,12 @@ body{
     border-radius: 5px;
 }
 
-#Senha{
-        margin-left: 11px;
-    }
+#linkEsqueciSenha,
+#linkVoltarLogin{
+    margin-top: 10px;
+}
 
-#button button:active{
+.button button:active{
     transform: scale(0.95);
     opacity: 0.8;
 }
@@ -93,16 +152,8 @@ body{
     body{
         font-size: 90%;
     }
-    #loguin{
+    .telaLoguin{
     width: 50%;
 
-    }
-    #loguin input{
-    width: 95%;
-    margin-bottom: 10px;
-    }
-
-    #Senha{
-        margin-left: unset;
     }
 }

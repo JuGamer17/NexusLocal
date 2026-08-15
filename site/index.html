@@ -12,24 +12,82 @@
 </head>
 <body>
     <div id="area">
-        <div id="loguin">
+
+        <!-- ==================== TELA: LOGIN ==================== -->
+        <div id="telaLogin" class="telaLoguin">
             <div>
                 <p>
                     Loguin
                 </p>
             </div>
-            <div>
-                <label for="Usuario">Usuario:</label>
-                <input type="text" id="Usuario" name="Usuario">
+            <div class="camposLoguin">
+                <div class="campoLoguin">
+                    <label for="Usuario">Usuario:</label>
+                    <input type="text" id="Usuario" name="Usuario">
+                </div>
+                <div class="campoLoguin">
+                    <label for="Senha">Senha:</label>
+                    <input type="password" id="Senha" name="Senha">
+                </div>
             </div>
-            <div>
-                <label for="Senha">Senha:</label>
-                <input type="password" id="Senha" name="Usuario">
-            </div>
-            <div id="button">
+            <div class="button">
                 <button id="logar">Entrar</button>
             </div>
+            <div id="linkEsqueciSenha" style="display: none;">
+                <a href="#" onclick="mostrarTelaCodigoRecuperacao(); return false;">Esqueci minha senha</a>
+            </div>
         </div>
+
+        <!-- ==================== TELA: CÓDIGO DE RECUPERAÇÃO ====================
+             Só aparece depois de errar a senha tentando logar como o admin -->
+        <div id="telaCodigoRecuperacao" class="telaLoguin" style="display: none;">
+            <div>
+                <p>
+                    Código de recuperação
+                </p>
+            </div>
+            <div class="camposLoguin">
+                <div class="campoLoguin">
+                    <label for="codigoRecuperacao">código aqui:</label>
+                    <input type="text" id="codigoRecuperacao">
+                </div>
+            </div>
+            <div class="button">
+                <button id="btnConfirmarCodigo" onclick="confirmarCodigoRecuperacao()">Confirmar</button>
+            </div>
+            <div id="linkVoltarLogin">
+                <a href="#" onclick="mostrarTelaLogin(); return false;">← Voltar</a>
+            </div>
+        </div>
+
+        <!-- ==================== TELA: ALTERAR SENHA DE ADMIN ====================
+             Chega aqui em 2 casos: primeiro login do admin (senha padrão), ou
+             depois de confirmar o código de recuperação -->
+        <div id="telaAlterarSenhaAdmin" class="telaLoguin" style="display: none;">
+            <div>
+                <p>
+                    Altere sua senha de admin
+                </p>
+            </div>
+            <div class="camposLoguin">
+                <div class="campoLoguin">
+                    <label for="novaSenhaAdmin">Senha:</label>
+                    <input type="password" id="novaSenhaAdmin">
+                </div>
+                <div class="campoLoguin">
+                    <label for="confirmarNovaSenhaAdmin">Confirmar senha:</label>
+                    <input type="password" id="confirmarNovaSenhaAdmin">
+                </div>
+                <div class="campoLoguin">
+                    <label for="emailRecuperacaoAdmin">Email para recuperação:</label>
+                    <input type="email" id="emailRecuperacaoAdmin">
+                </div>
+            </div>
+            <div class="button">
+                <button id="btnSalvarSenhaAdmin" onclick="salvarNovaSenhaAdmin()">Salvar e Entrar</button>
+            </div>
+        </div>
+
     </div>
 
 
