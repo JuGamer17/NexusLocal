@@ -14,21 +14,21 @@ services:
           cpus: "2"
           memory: 1024M
 
-  api:
-    build: ./api
-    container_name: api
-    env_file:
-      - ./api/.env
-    expose:
-      - "8000"
-    volumes:
-      - D:\Data docker\Storage:/app/storage
-      - D:\Data Docker\logs:/app/logs
+  #api:
+   # build: ./api
+    #container_name: api
+    #env_file:
+     # - ./api/.env
+    #expose:
+     # - "8000"
+    #volumes:
+     # - D:\Data docker\Storage:/app/storage
+      #- D:\Data Docker\logs:/app/logs
 
-    deploy:
-      resources:
-        limits:
-
-          cpus: "2"
-          memory: 1024M
+    #deploy:
+     # resources:
+      #  limits:
+#
+ #         cpus: "2"
+  #        memory: 1024M
     
