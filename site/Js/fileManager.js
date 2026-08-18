@@ -372,4 +372,8 @@ function sair(){
     window.location.href = "index.html";
 }
 
+function baixaouConfia(){
+    alert("Finge que baixou, complicado arrumar isso sem a api...");
+}
+
 
