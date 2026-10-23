@@ -1,12 +1,19 @@
 //apos atualizar aqui usar o CNTR + SHIFT + R pra recarregar o cache, ou so muda algo no HTML
 //algo assim <script src="script.js?v=<?=time()?>"></script>
-//aqui tera um usuario padrão para casos de testes locais sem a API.
 
+// Só pra decidir quando mostrar "Esqueci minha senha"
 const ADMIN_USER_PADRAO = "ADMIN";
-const ADMIN_SENHA_PADRAO = "SENHA123321";
+
+// Limpa sobras dos testes sem API
+localStorage.removeItem('senhaAdmin');
+localStorage.removeItem('emailRecuperacaoAdmin');
+localStorage.removeItem('primeiroAcessoAdminConcluido');
+if (localStorage.getItem('token') === 'testMode') {
+    localStorage.removeItem('token');
+}
 
 
-// ---- Referências e troca entre as 3 telas (mesma técnica do configuracoes.js) ----
+// ---- Troca entre as 3 telas ----
 
 const telaLogin = document.getElementById("telaLogin");
 const telaCodigoRecuperacao = document.getElementById("telaCodigoRecuperacao");
@@ -23,7 +30,7 @@ function mostrarTelaCodigoRecuperacao() {
     telaCodigoRecuperacao.style.display = '';
     telaAlterarSenhaAdmin.style.display = 'none';
 
-    enviarCodigoRecuperacao(); // "manda" o código assim que a tela abre
+    enviarCodigoRecuperacao(); // "manda" o código ao abrir a tela
 }
 
 function mostrarTelaAlterarSenhaAdmin() {
@@ -33,7 +40,7 @@ function mostrarTelaAlterarSenhaAdmin() {
 }
 
 
-// ---- Login normal ----
+// ---- Login ----
 
 const button  = document.getElementById("logar");
 
@@ -41,36 +48,6 @@ button.addEventListener('click', async function(){
     const sndUser = document.getElementById("Usuario").value;
     const sndPassword = document.getElementById("Senha").value;
 
-    // Todo o fluxo do usuário ADMIN (o de bootstrap/teste) é resolvido AQUI, só no
-    // navegador — certo ou errado, nunca chega a tentar a API de verdade, porque
-    // esse usuário não existe lá (é um atalho local, não um usuário do banco).
-    if (sndUser === ADMIN_USER_PADRAO) {
-        // Se já existir uma senha salva (porque o admin trocou ela antes), usa
-        // essa; senão, cai na senha padrão de fábrica.
-        const senhaAtualAdmin = localStorage.getItem('senhaAdmin') || ADMIN_SENHA_PADRAO;
-
-        if (sndPassword === senhaAtualAdmin) {
-            if (!localStorage.getItem('primeiroAcessoAdminConcluido')) {
-                // Primeiro login do admin: obriga a trocar a senha antes de liberar o acesso
-                mostrarTelaAlterarSenhaAdmin();
-                return;
-            }
-
-            localStorage.setItem("token", "testMode");
-            window.location.href = "areaArquivos.html";
-            return;
-        }
-
-        // Senha errada especificamente pro admin: mostra o erro e já revela o
-        // link de recuperação, sem tentar nenhum fetch (não tem API pra tentar).
-        alert("usuario ou senha incorreta");
-        document.getElementById('linkEsqueciSenha').style.display = '';
-        return;
-    }
-
-
-    // Daqui pra baixo é um usuário "de verdade" (não o ADMIN local) — aí sim
-    // faz sentido tentar a API.
     const formData = new FormData();
     formData.append("username", sndUser);
     formData.append("password", sndPassword);
@@ -87,36 +64,40 @@ button.addEventListener('click', async function(){
     }
 
     if (!response.ok) {
-        alert("usuario ou senha incorreta");
+        if (response.status === 401) {
+            alert("usuario ou senha incorreta");
+        } else {
+            alert(`Erro no servidor (${response.status}).`);
+        }
+
+        // Admin errou a senha: libera a recuperação
+        if (response.status === 401 && sndUser.trim().toLowerCase() === ADMIN_USER_PADRAO.toLowerCase()) {
+            document.getElementById('linkEsqueciSenha').style.display = '';
+        }
         return;
     }
 
     const data = await response.json();
 
-    console.log(data.access_token)
     localStorage.setItem("token", data.access_token);
     window.location.href = "areaArquivos.html";
 });
 
 
-// ---- Recuperação de senha do admin (único usuário com esse fluxo, por enquanto) ----
+// ---- Recuperação de senha do admin (simulada) ----
 
 let CODIGO_RECUPERACAO_GERADO = null;
 
-// Simula o backend gerando um código de 6 dígitos e mandando por e-mail.
-// TODO: trocar por um POST /admin/recuperacao/enviar de verdade — o código tem
-// que nascer e ficar guardado no servidor, nunca só aqui no navegador como agora
-// (e o alert() é só pra testar sem precisar de um servidor de e-mail de verdade).
+// TODO: POST /admin/recuperacao/enviar — o código tem que ficar no servidor
 function enviarCodigoRecuperacao() {
     CODIGO_RECUPERACAO_GERADO = String(Math.floor(100000 + Math.random() * 900000));
     alert(`[SIMULADO] Um e-mail com o código ${CODIGO_RECUPERACAO_GERADO} seria enviado agora.`);
 }
 
+// TODO: POST /admin/recuperacao/confirmar — quem valida é o servidor
 function confirmarCodigoRecuperacao() {
     const codigoDigitado = document.getElementById('codigoRecuperacao').value.trim();
 
-    // TODO: trocar por um POST /admin/recuperacao/confirmar de verdade — quem
-    // valida o código tem que ser o servidor, não o navegador de quem está tentando entrar
     if (codigoDigitado !== CODIGO_RECUPERACAO_GERADO) {
         alert('Código incorreto.');
         return;
@@ -126,7 +107,7 @@ function confirmarCodigoRecuperacao() {
 }
 
 
-// ---- Definir nova senha do admin (1º login OU depois de confirmar o código) ----
+// ---- Nova senha do admin (simulada) ----
 
 function salvarNovaSenhaAdmin() {
     const novaSenha = document.getElementById('novaSenhaAdmin').value;
@@ -143,18 +124,9 @@ function salvarNovaSenhaAdmin() {
         return;
     }
 
-    // TODO: PATCH /admin/senha no futuro — manda novaSenha (o backend faz o hash
-    // com bcrypt) e o email de recuperação, gravando na tabela Usuario do admin.
-    //
-    // IMPORTANTE: guardar senha em texto puro no localStorage é só pra essa fase
-    // de testes sem backend — NUNCA faça isso em produção. Quando a API existir,
-    // ela guarda a senha com hash (bcrypt) no banco, e o navegador nunca mais
-    // precisa saber/guardar a senha depois de enviar ela uma vez no cadastro/troca.
-    localStorage.setItem('senhaAdmin', novaSenha);
-    localStorage.setItem('emailRecuperacaoAdmin', email);
-    localStorage.setItem('primeiroAcessoAdminConcluido', 'true');
-    localStorage.setItem("token", "testMode");
-    window.location.href = "areaArquivos.html";
+    // TODO: PATCH /admin/senha (a API faz o hash e grava no banco)
+    alert('[SIMULADO] Senha não alterada: a rota ainda não existe.');
+    mostrarTelaLogin();
 }
 
 

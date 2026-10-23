@@ -8,6 +8,9 @@ storage/
 logs/
 *.log
 
+# Dados do MySQL (pasta de dados do banco, gerada em runtime; nunca vai pro repositorio)
+DB/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -21,3 +24,7 @@ env/
 Thumbs.db
 .vscode/
 .idea/
+
+wireframe_nexuslocal.md
+Context.md
+claude.md

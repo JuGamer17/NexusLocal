@@ -171,7 +171,7 @@ async def upload_file(file: UploadFile = File(...), current_user: str = Depends(
 @app.get("/loadFiles")
 async def loadFiles(current_user: str = Depends(get_current_user)):
     files = []
-    for file in ((UPLOAD_DIR / current_user).resolve()).iterdir():
+    for file in ((UPLOAD_DIR).resolve()).iterdir():
         if file.is_file():
 
             fileStat = file.stat()

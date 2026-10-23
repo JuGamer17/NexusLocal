@@ -5,30 +5,39 @@ const bntExcluir = document.getElementById("excluir");
 
 const areaArquivos = document.getElementById("contentArea");
 const template = document.getElementById("template_arquivo");
-const clone = template.content.cloneNode(true);
-const token = localStorage.getItem("token");
 const inputItem = document.getElementById("inputArquivo");
+const caminho = document.querySelector("#caminhoo p i");
+const token = localStorage.getItem("token");
 
-let arquivoModalAtual = null; // nome do arquivo aberto no modal agora — usado pelo Excluir/Baixar
+let pastaAtual = null;        // null = lista de pastas
+let arquivoModalAtual = null; // {id, name} do modal aberto
 
-// Preenche e abre o modal a partir da div clicada na grade de arquivos. Ficou numa
-// função só porque loadFiles() e testMode() faziam exatamente a mesma coisa aqui,
-// só que copiada e colada duas vezes.
-function abrirModalArquivo(divClick) {
-    arquivoModalAtual = divClick.querySelector(".nomeTemplate").textContent;
 
-    document.getElementById("nomeArquivo").textContent = arquivoModalAtual;
-    document.getElementById("tamanhoArquivo").textContent = divClick.querySelector(".tamanhoTemplate").textContent;
-    document.getElementById("modalImage").src = divClick.querySelector(".imagemTenplate").src;
-    modal.showModal();
+// ---- Sessão e requisições ----
+
+function voltarParaLoguin() {
+    localStorage.removeItem("token");
+    window.location.href = "index.html";
+}
+
+// fetch com token; 401 volta pro loguin
+async function apiFetch(url, opcoes = {}) {
+    const resposta = await fetch(url, {
+        ...opcoes,
+        headers: { ...opcoes.headers, "Authorization": "Bearer " + token }
+    });
+
+    if (resposta.status === 401) {
+        voltarParaLoguin();
+        throw new Error("Sessão expirada");
+    }
+    return resposta;
 }
 
 
 // ---- Controle de acesso ao botão "configurações" ----
 
-// Decodifica só a "carga" (payload) de um JWT (a parte do meio, entre os dois pontos),
-// sem verificar assinatura — isso não é uma verificação de segurança, é só uma leitura
-// dos dados que o próprio token já carrega (ex: o nome do usuário).
+// Lê o payload do JWT (sem verificar assinatura, só leitura)
 function decodificarPayloadToken(tokenJwt) {
     try {
         const partePayload = tokenJwt.split('.')[1];
@@ -39,12 +48,8 @@ function decodificarPayloadToken(tokenJwt) {
     }
 }
 
+// Precisa da claim "isADM" no token (API)
 function usuarioEhAdmin() {
-    if (token === "testMode") return true; // o usuário de demonstração (ADMIN, no loguin.js) é sempre admin
-
-    // TODO: o backend ainda não coloca "isADM" no token (hoje só tem "sub" e "exp" —
-    // ver create_access_token em api/app/main.py). Quando o login passar a incluir
-    // essa claim, essa função já funciona sem precisar mudar mais nada aqui.
     const payload = decodificarPayloadToken(token);
     return !!(payload && payload.isADM);
 }
@@ -57,266 +62,166 @@ if (!usuarioEhAdmin()) {
     document.getElementById('btnConfiguracoes').style.display = 'none';
 }
 
-// IMPORTANTE: isso é só interface — esconde o botão pra quem não é admin, mas não
-// impede ninguém de digitar "configuracoes.html" direto na barra de endereço.
-// A proteção de verdade (checar admin no backend antes de deixar entrar) ainda é TODO.
+// Só interface: a proteção de verdade é TODO no backend
 
 
+// ---- Grade de itens ----
 
-async function loadFiles() {
-    
+function formatarTamanho(sizeKb) {
+    if (sizeKb > 943719) return `${(sizeKb/1024/1024).toFixed(2)}Gb`;
+    if (sizeKb > 922) return `${(sizeKb/1024).toFixed(2)}Mb`;
+    return `${sizeKb}Kb`;
+}
 
-    
+function iconeDoTipo(fileType) {
+    if (fileType.includes("rar") || fileType.includes("zip")) return "Images/zip.png";
+    if (fileType.includes("text")) return "Images/txt.png";
+    if (fileType.includes("video")) return "Images/video.png";
+    return "Images/NotFound.png";
+}
 
-    const recived = await fetch("/api/loadFiles", {
-        headers: {
-            "Authorization": "Bearer " + token  
-        }
-    });
-
-    const filess = await recived.json();
-    
-    
-    
-
-    areaArquivos.innerHTML = "";
-
-    filess.files.forEach(async arquivo => {
-
-        const clone = template.content.cloneNode(true);
-
-        
-
-        clone.querySelector(".nomeTemplate").textContent = arquivo.name;
-        if (arquivo.size_kb > 943719){
-            clone.querySelector(".tamanhoTemplate").textContent = `${(arquivo.size_kb/1024/1024).toFixed(2)}Gb`;
-        }
-        else if(arquivo.size_kb > 922){
-            clone.querySelector(".tamanhoTemplate").textContent = `${(arquivo.size_kb/1024).toFixed(2)}Mb`;
-        }
-        else{
-            clone.querySelector(".tamanhoTemplate").textContent = `${arquivo.size_kb}Kb`;
-        }
-        const img = clone.querySelector(".imagemTenplate");
-        console.log(img);
-
-        if(arquivo.fileType.includes("rar") ||
-            arquivo.fileType.includes("zip")){
-                img.src = `Images/zip.png`;
-        }
-        else if(arquivo.fileType.includes("image")){
-            const url = `/api/getFile/${arquivo.name}`;
-            loadImg(img, url);
-
-            
-
-        }
-        else if(arquivo.fileType.includes("text")){
-            img.src = `Images/txt.png`;
-        }
-        else if(arquivo.fileType.includes("video")){
-            img.src = `Images/video.png`;
-        }
-        else{
-            img.src = `Images/NotFound.png`;
-        }
-
-        const div = clone.querySelector(".arquivos");
-
-        div.addEventListener("click", (e) =>{
-            abrirModalArquivo(e.currentTarget);
-        });
-        
-
-        areaArquivos.append(clone);
-
-
-    });
-
+// Cria um item na grade; aoClicar recebe o src atual da imagem
+function criarItem(nome, tamanho, imagem, aoClicar) {
     const clone = template.content.cloneNode(true);
     const div = clone.querySelector(".arquivos");
-    clone.querySelector(".nomeTemplate").textContent = `Adicionar Item`;
     const img = clone.querySelector(".imagemTenplate");
-    img.src = `Images/mais.png`;
 
-    div.addEventListener("click", (e) =>{
-        const divClick = e.currentTarget;
-        inputItem.click();
-        
-    });
+    clone.querySelector(".nomeTemplate").textContent = nome;
+    clone.querySelector(".tamanhoTemplate").textContent = tamanho;
+    img.src = imagem;
 
+    div.addEventListener("click", () => aoClicar(img.src));
 
-    
-    
     areaArquivos.append(clone);
+    return img;
+}
 
+async function loadImg(img, url) {
+    try {
+        const response = await apiFetch(url);
+        if (!response.ok) return;
 
-
+        const blob = await response.blob(); // dados em binario
+        img.src = URL.createObjectURL(blob); // link local da imagem (sem revoke: o modal reusa)
+    } catch (erro) {
+        console.log("Erro ao carregar imagem:", erro);
+    }
 }
 
 
- async function loadImg(img, url) {
-        const response = await fetch(url, {
-            headers: {
-                "Authorization": "Bearer " + token
+// ---- Telas: pastas e arquivos ----
+
+async function mostrarPastas() {
+    pastaAtual = null;
+    caminho.textContent = "home";
+    areaArquivos.innerHTML = "";
+
+    try {
+        const response = await apiFetch("/api/pastas");
+        if (!response.ok) {
+            alert("Não foi possível carregar as pastas.");
+            return;
+        }
+
+        const dados = await response.json();
+
+        dados.pastas.forEach(pasta => {
+            criarItem(pasta.nome, "", "Images/pasta.svg", () => abrirPasta(pasta));
+        });
+    } catch (erro) {
+        console.log("Erro ao carregar pastas:", erro);
+    }
+}
+
+async function abrirPasta(pasta) {
+    pastaAtual = pasta;
+    caminho.textContent = "home/" + pasta.nome;
+    areaArquivos.innerHTML = "";
+
+    try {
+        const response = await apiFetch(`/api/pastas/${pasta.id}/arquivos`);
+        if (!response.ok) {
+            alert("Não foi possível abrir a pasta.");
+            mostrarPastas();
+            return;
+        }
+
+        const dados = await response.json();
+
+        dados.files.forEach(arquivo => {
+            const tamanho = formatarTamanho(arquivo.size_kb);
+            const ehImagem = arquivo.fileType.includes("image");
+            const imagem = ehImagem ? "Images/NotFound.png" : iconeDoTipo(arquivo.fileType);
+
+            const img = criarItem(arquivo.name, tamanho, imagem, (src) => {
+                abrirModalArquivo(arquivo, tamanho, src);
+            });
+
+            if (ehImagem) {
+                loadImg(img, `/api/arquivos/${arquivo.id}`);
             }
         });
-        const imgs = await response.blob();//dados em binario
 
-        const imgUrl = URL.createObjectURL(imgs);//aparentemente cria um link pra acessar a imagem independente 
-            
-        img.src = imgUrl;
-
-        //img.onload = () =>{
-            //isso limpa a imagem da URL pra não ficar na memoria depois de carregada
-            //URL.revokeObjectURL(imgUrl);
-            //mas como vou usar no modal retirei isso, mas e util 
-        //}
- }
-
-// Arquivos fictícios usados só quando token === "testMode" (login sem API) — no mesmo
-// formato que a API real devolveria em /api/loadFiles (name, size_kb, fileType), só que
-// sem nenhum arquivo de verdade por trás. Fica em `let` (não `const`) porque em modo
-// teste dá pra "enviar" um arquivo novo — ele só é adicionado aqui, na lista local.
-let ARQUIVOS_TESTE = [
-    { name: "video_aula_01.mp4",     size_kb: 15_500_000, fileType: "video/mp4" },
-    { name: "projeto_final.zip",     size_kb: 33_500_000, fileType: "application/zip" },
-    { name: "planilha_custos.xlsx",  size_kb: 340,        fileType: "application/vnd.openxmlformats" },
-    { name: "roteiro_v2.txt",        size_kb: 12,         fileType: "text/plain" },
-    { name: "audio_bruto.wav",       size_kb: 128_000,    fileType: "audio/wav" },
-];
-
-function testMode(){
-    areaArquivos.innerHTML = "";
-
-    ARQUIVOS_TESTE.forEach(arquivo => {
-        const clone = template.content.cloneNode(true);
-
-        clone.querySelector(".nomeTemplate").textContent = arquivo.name;
-
-        if (arquivo.size_kb > 943719){
-            clone.querySelector(".tamanhoTemplate").textContent = `${(arquivo.size_kb/1024/1024).toFixed(2)}Gb`;
+        // Só quem pode escrever na pasta vê o "+"
+        if (pasta.pode_escrever) {
+            criarItem("Adicionar Item", "", "Images/mais.png", () => inputItem.click());
         }
-        else if(arquivo.size_kb > 922){
-            clone.querySelector(".tamanhoTemplate").textContent = `${(arquivo.size_kb/1024).toFixed(2)}Mb`;
-        }
-        else{
-            clone.querySelector(".tamanhoTemplate").textContent = `${arquivo.size_kb}Kb`;
-        }
-
-        const img = clone.querySelector(".imagemTenplate");
-
-        // Se o arquivo já tem uma prévia gerada localmente (foi escolhido de verdade no
-        // "Adicionar Item" em modo teste), usa ela direto — o navegador já tem o arquivo
-        // em mãos, não precisa de nenhuma API pra isso.
-        if (arquivo.previewUrl) {
-            img.src = arquivo.previewUrl;
-        }
-        else if(arquivo.fileType.includes("rar") || arquivo.fileType.includes("zip")){
-            img.src = `Images/zip.png`;
-        }
-        else if(arquivo.fileType.includes("text")){
-            img.src = `Images/txt.png`;
-        }
-        else if(arquivo.fileType.includes("video") || arquivo.fileType.includes("audio")){
-            img.src = `Images/video.png`;
-        }
-        else{
-            img.src = `Images/NotFound.png`;
-        }
-
-        const div = clone.querySelector(".arquivos");
-
-        div.addEventListener("click", (e) =>{
-            abrirModalArquivo(e.currentTarget);
-        });
-
-        areaArquivos.append(clone);
-    });
-
-    const clone = template.content.cloneNode(true);
-    const div = clone.querySelector(".arquivos");
-    clone.querySelector(".nomeTemplate").textContent = `Adicionar Item`;
-    const img = clone.querySelector(".imagemTenplate");
-    img.src = `Images/mais.png`;
-
-    div.addEventListener("click", (e) =>{
-        const divClick = e.currentTarget;
-        inputItem.click();
-        
-    });
-
-
-    
-    
-    areaArquivos.append(clone);
-}
-
-// Adiciona um arquivo escolhido de verdade (pelo <input type="file">) na lista local de
-// teste, sem mandar nada pra API — só "finge" que o upload deu certo.
-function adicionarArquivoTeste(file) {
-    const novoArquivo = {
-        name: file.name,
-        size_kb: Math.round(file.size / 1024),
-        fileType: file.type || "application/octet-stream",
-    };
-
-    if (novoArquivo.fileType.includes("image")) {
-        novoArquivo.previewUrl = URL.createObjectURL(file); // miniatura direto do arquivo, sem precisar de rede
+    } catch (erro) {
+        console.log("Erro ao abrir pasta:", erro);
     }
-
-    ARQUIVOS_TESTE.push(novoArquivo);
-    testMode(); // reconstrói a lista com o arquivo novo já incluído
 }
 
-if(token == "testMode"){
-    testMode();
-}else{
-    loadFiles();
+// Volta pra tela atual (pasta aberta ou lista de pastas)
+function recarregar() {
+    if (pastaAtual) {
+        abrirPasta(pastaAtual);
+    } else {
+        mostrarPastas();
+    }
 }
 
 
+// ---- Modal ----
 
+function abrirModalArquivo(arquivo, tamanho, imagemSrc) {
+    arquivoModalAtual = arquivo;
 
+    document.getElementById("nomeArquivo").textContent = arquivo.name;
+    document.getElementById("tamanhoArquivo").textContent = tamanho;
+    document.getElementById("modalImage").src = imagemSrc;
+    modal.showModal();
+}
 
-
-
-inputItem.addEventListener("change", async () => {
-    if (inputItem.files.length === 0) return;
-    const file = inputItem.files[0];
-
-    if (token === "testMode") {
-        adicionarArquivoTeste(file);
-        inputItem.value = "";
-        return; // não chega no fetch lá embaixo — modo teste não fala com nenhuma API
+// Clique no backdrop: o alvo é o próprio <dialog>
+modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+        modal.close();
     }
-
-    const formData = new FormData();
-    formData.append("file", file);
-    try{
-
-        const response = await fetch("/api/upload", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            body: formData
-            
-        });
-        if(response.ok){
-            loadFiles();
-        }else{
-            console.log("erro ao enviar");
-            console.log(response);
-        }
-
-    }catch(e){
-        console.log("deu erro ó: ", e);
-    }
-    inputItem.value = "";
-
 });
 
+async function baixarArquivoAtual() {
+    if (!arquivoModalAtual) return;
+
+    try {
+        const response = await apiFetch(`/api/arquivos/${arquivoModalAtual.id}/download`);
+        if (!response.ok) {
+            alert("Não foi possível baixar o arquivo.");
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = arquivoModalAtual.name;
+        link.click();
+
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (erro) {
+        console.log("Erro no download:", erro);
+    }
+}
 
 bntExcluir.addEventListener("click", async () => {
     if (!arquivoModalAtual) {
@@ -324,56 +229,66 @@ bntExcluir.addEventListener("click", async () => {
         return;
     }
 
-    const confirmado = confirm(`Excluir "${arquivoModalAtual}"? Essa ação não pode ser desfeita.`);
+    const confirmado = confirm(`Excluir "${arquivoModalAtual.name}"? Essa ação não pode ser desfeita.`);
     if (!confirmado) return;
 
-    if (token === "testMode") {
-        // Modo teste: remove só do array local e redesenha a lista, sem tentar API
-        ARQUIVOS_TESTE = ARQUIVOS_TESTE.filter(arquivo => arquivo.name !== arquivoModalAtual);
-        modal.close();
-        testMode();
-        return;
-    }
-
-    // TODO: o backend ainda não tem nenhuma rota de exclusão (só existem /login,
-    // /upload, /loadFiles e /getFile em api/app/main.py). Quando existir algo
-    // tipo DELETE /deleteFile/{filename}, essa chamada já deve funcionar, já
-    // que a URL/método abaixo seguem o mesmo padrão das outras rotas.
+    // TODO: DELETE /arquivos/{id} ainda não existe na API
     try {
-        const response = await fetch(`/api/deleteFile/${arquivoModalAtual}`, {
-            method: "DELETE",
-            headers: { "Authorization": "Bearer " + token }
+        const response = await apiFetch(`/api/arquivos/${arquivoModalAtual.id}`, {
+            method: "DELETE"
         });
 
         if (response.ok) {
             modal.close();
-            loadFiles();
+            recarregar();
         } else {
             alert("Não foi possível excluir o arquivo.");
         }
     } catch (erro) {
-        alert("Essa ação ainda depende de uma rota de exclusão que o backend ainda não tem.");
+        alert("Erro ao excluir o arquivo.");
     }
 });
 
-// Fecha o modal clicando fora dele (no backdrop escuro). Clicar no backdrop de um
-// <dialog> nativo dispara um click cujo target é o próprio elemento <dialog> —
-// diferente de clicar em algo DENTRO dele (o alvo aí seria o filho clicado, tipo
-// #backgrowndModal ou um botão). Por isso o `e.target === modal` funciona: só
-// é verdadeiro quando o clique foi na área vazia ao redor do conteúdo.
-modal.addEventListener("click", (e) => {
-    if (e.target === modal) {
-        modal.close();
+
+// ---- Upload ----
+
+inputItem.addEventListener("change", async () => {
+    if (inputItem.files.length === 0 || !pastaAtual) return;
+    const file = inputItem.files[0];
+
+    // Sem Content-Type: o navegador monta o multipart
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await apiFetch(`/api/pastas/${pastaAtual.id}/arquivos`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (response.ok) {
+            recarregar();
+        } else {
+            alert("Não foi possível enviar o arquivo.");
+            console.log(response);
+        }
+    } catch (erro) {
+        console.log("Erro ao enviar:", erro);
     }
+
+    inputItem.value = "";
 });
+
 
 function sair(){
-    localStorage.setItem("token", "");
-    window.location.href = "index.html";
-}
-
-function baixaouConfia(){
-    alert("Finge que baixou, complicado arrumar isso sem a api...");
+    voltarParaLoguin();
 }
 
 
+// ---- Início ----
+
+if (token) {
+    mostrarPastas();
+} else {
+    voltarParaLoguin();
+}
