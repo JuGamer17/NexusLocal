@@ -15,6 +15,11 @@ import shutil
 import logging
 import mimetypes
 
+
+import pymysql
+import pymysql.cursors
+
+
 #VERIFICAR SOBRE EXPIRAR O TOKEN E JOGAR DE VOLTA PRA TELA DE LOGUIN QUANDO OCORRER
 #E TAMBEM EXIGIR O HASH NOS OUTROS METODOS
 
@@ -117,11 +122,30 @@ usuarios = {
         "hashed_password": os.getenv("ADMIN_PASSWORD_HASH")
     }
 }
+
+def conectDB():
+    conn = pymysql.connect(
+    host="mysql",                  # Nome do serviço no compose
+    user="nexusConnection",
+    password=os.getenv("DB_PASSWORD"),
+    database="BancoNexus",
+    charset="utf8mb4",
+    cursorclass=pymysql.cursors.DictCursor,   # Linhas como dict
+    )
+
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
 #=====================================================================
 @app.post("/login")
-async def login(username: str = Form(...), password: str = Form(...)):
+async def login(username: str = Form(...), password: str = Form(...), db = Depends(conectDB)):
 
-    user = usuarios.get(username)
+    with db.cursor() as cur:
+        cur.execute("SELECT id, usuario, senha, isADM FROM Usuario WHERE usuario = %s", (username,))
+        user = cur.fetchone()
 
     if not user or not verify_password(password, user["hashed_password"]):
         raise HTTPException(
@@ -149,7 +173,7 @@ async def teste():
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...), current_user: str = Depends(get_current_user)):
     
-    Personal_Path = (UPLOAD_DIR / current_user).resolve()
+    Personal_Path = (UPLOAD_DIR).resolve()
     Personal_Path.mkdir(exist_ok=True)
 
     file_path = Personal_Path / file.filename

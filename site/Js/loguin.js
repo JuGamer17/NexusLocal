@@ -4,6 +4,9 @@
 // Só pra decidir quando mostrar "Esqueci minha senha"
 const ADMIN_USER_PADRAO = "ADMIN";
 
+// Token do 1º login, só em memória (usado na troca de senha)
+let TOKEN_TROCA_SENHA = null;
+
 // Limpa sobras dos testes sem API
 localStorage.removeItem('senhaAdmin');
 localStorage.removeItem('emailRecuperacaoAdmin');
@@ -79,6 +82,13 @@ button.addEventListener('click', async function(){
 
     const data = await response.json();
 
+    // 1º login: tem que trocar a senha antes de entrar
+    if (data.precisa_trocar_senha) {
+        TOKEN_TROCA_SENHA = data.access_token;
+        mostrarTelaAlterarSenhaAdmin();
+        return;
+    }
+
     localStorage.setItem("token", data.access_token);
     window.location.href = "areaArquivos.html";
 });
@@ -107,9 +117,9 @@ function confirmarCodigoRecuperacao() {
 }
 
 
-// ---- Nova senha do admin (simulada) ----
+// ---- Nova senha do admin (1º login: real; recuperação: simulada) ----
 
-function salvarNovaSenhaAdmin() {
+async function salvarNovaSenhaAdmin() {
     const novaSenha = document.getElementById('novaSenhaAdmin').value;
     const confirmarSenha = document.getElementById('confirmarNovaSenhaAdmin').value;
     const email = document.getElementById('emailRecuperacaoAdmin').value;
@@ -119,13 +129,44 @@ function salvarNovaSenhaAdmin() {
         return;
     }
 
-    if (!email || !email.includes('@')) {
+    // E-mail ainda não é enviado (sem coluna no banco)
+    if (email && !email.includes('@')) {
         alert('Digite um e-mail válido para recuperação.');
         return;
     }
 
-    // TODO: PATCH /admin/senha (a API faz o hash e grava no banco)
-    alert('[SIMULADO] Senha não alterada: a rota ainda não existe.');
+    // Veio da recuperação (sem token): simulado
+    if (!TOKEN_TROCA_SENHA) {
+        // TODO: recuperação por código no servidor
+        alert('[SIMULADO] Senha não alterada: a rota ainda não existe.');
+        mostrarTelaLogin();
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("nova_senha", novaSenha);
+
+    let response;
+    try {
+        response = await fetch("/api/admin/senha", {
+            method: "PATCH",
+            headers: { "Authorization": "Bearer " + TOKEN_TROCA_SENHA },
+            body: formData
+        });
+    } catch (erro) {
+        alert("Não foi possível conectar à API.");
+        return;
+    }
+
+    if (!response.ok) {
+        alert(`Não foi possível alterar a senha (${response.status}).`);
+        return;
+    }
+
+    TOKEN_TROCA_SENHA = null;
+    document.getElementById('novaSenhaAdmin').value = '';
+    document.getElementById('confirmarNovaSenhaAdmin').value = '';
+    alert('Senha alterada. Entre com a nova senha.');
     mostrarTelaLogin();
 }
 
